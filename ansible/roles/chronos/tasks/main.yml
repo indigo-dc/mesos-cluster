@@ -1,0 +1,53 @@
+- name: generate chronos key password
+  shell: head /dev/urandom | tr -dc A-Za-z0-9 | head -c10
+  register: chronos_key_randpassword
+  when: generate_random_pass == "true"
+
+- name: generate chronos jks password
+  shell: head /dev/urandom | tr -dc A-Za-z0-9 | head -c10
+  register: chronos_jks_randpassword
+  when: generate_random_pass == "true"
+
+- name: Install openjdk
+  apt: name="openjdk-7-jre-headless" state=present
+
+
+- name: generate keystore with random password
+  vars: 
+    key_password: "{{chronos_key_randpassword.stdout}}"
+    pkcs_password: "{{chronos_jks_randpassword.stdout}}"
+    jks_password: "{{chronos_jks_randpassword.stdout}}"
+  include: enable_ssl.yml
+  when: generate_random_pass == "true"
+
+
+- name: generate keystore
+  vars:
+    key_password: "{{chronos_key_password}}"
+    pkcs_password: "{{chronos_jks_password}}"
+    jks_password: "{{chronos_jks_password}}"
+  include: enable_ssl.yml
+  when: generate_random_pass != "true"
+
+
+- name: run chronos container
+  docker:
+    name: chronos
+    image: "{{ chronos_image }}"
+    state: started
+    detach: true
+    restart_policy: always
+    net: host
+    volumes:
+    - "{{ chronos_keystore_path }}:{{ chronos_keystore_path }}"
+    env:
+      CHRONOS_HOSTNAME: "{{ chronos_hostname }}" 
+      CHRONOS_HTTP_PORT: "{{ chronos_port }}"
+      CHRONOS_MASTER: "{{ chronos_master_peers }}"
+      CHRONOS_ZK_HOSTS: "{{ chronos_zk_peers }}"
+      CHRONOS_ZK_PATH: "/{{ chronos_framework_name }}/state" 
+      CHRONOS_MESOS_FRAMEWORK_NAME: "{{ chronos_framework_name }}"
+      CHRONOS_HTTPS_PORT: "{{ chronos_https_port }}"
+      CHRONOS_SSL_KEYSTORE_PASSWORD: "{{ chronos_ssl_ks_password }}"
+      CHRONOS_SSL_KEYSTORE_PATH: "{{ chronos_keystore_path }}"
+      CHRONOS_HTTP_CREDENTIALS: "{{chronos_username}}:{{chronos_password}}"

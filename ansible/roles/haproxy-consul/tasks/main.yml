@@ -1,0 +1,13 @@
+- name: run haproxy-consul container
+  docker:
+    name: haproxy
+    image: "{{ haproxy_consul_image }}"
+    state: started
+    detach: true
+    restart_policy: always
+    net: host
+    env:
+      #HAPROXY_DOMAIN=172.30.6.250.xip.io
+      HAPROXY_MODE: "{{haproxy_consul_mode}}"
+  tags: haproxy-consul
+

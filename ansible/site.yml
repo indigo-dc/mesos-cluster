@@ -1,0 +1,32 @@
+---
+- hosts: all
+  tasks:
+    - name: set hostname to local ipv4 address
+      lineinfile:
+        dest: /etc/hosts
+        line: "{{ ansible_eth0.ipv4.address }} {{ ansible_hostname }}"
+
+- hosts: mesos_masters
+  roles:
+     - { role: docker }
+     - { role: consul, consul_mode: "server" }
+     - { role: dnsmasq }
+     - { role: zookeeper }
+     - { role: mesos, mesos_install_mode: "master"}
+     - { role: marathon }
+     - { role: chronos }
+
+- hosts: mesos_slaves
+  roles:
+    - { role: docker }
+    - { role: consul, consul_mode: "agent" }
+    - { role: dnsmasq }
+    - {role: mesos, mesos_install_mode: "slave" }
+
+- hosts: load_balancers
+  roles:
+    - { role: docker }
+    - { role: consul, consul_mode: "agent" }
+    - { role: dnsmasq }
+    - { role: haproxy-consul }
+    - { role: keepalived, keepalived_virtual_ip: "172.30.6.144" }

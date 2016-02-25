@@ -1,0 +1,21 @@
+- name: load ip_vs module
+  modprobe: name=ip_vs state=present
+
+- name: make modprobe persistent
+  lineinfile: dest=/etc/modules line="ip_vs" state=present
+
+
+- name: run keepalived container
+  docker:
+    name: keepalived
+    image: "{{ keepalived_image }}"
+    state: started
+    detach: true
+    restart_policy: always
+    net: host
+    privileged: true
+    env:
+      KEEPALIVED_PRIORITY: "{{ keepalived_priority }}"
+      KEEPALIVED_VIRTUAL_IP: "{{ keepalived_virtual_ip }}"
+  tags: keepalived
+

@@ -1,0 +1,20 @@
+- name: run zookeeper container
+  docker:
+    name: zookeeper
+    image: "{{ zookeeper_image }}"
+    state: started
+    detach: true
+    net: "host"
+    env:
+      MYID: "{{ zookeeper_id }}"
+      SERVERS: "{{ zookeeper_servers_list }}"
+    restart_policy: always
+  tags:
+    - zookeeper
+
+- name: register zookeeper service 
+  consul:
+    service_name: zookeeper
+    service_port: 2181
+    tags: zookeeper
+

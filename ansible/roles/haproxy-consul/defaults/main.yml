@@ -1,0 +1,4 @@
+---
+haproxy_consul_mode: "marathon"
+haproxy_consul_version: 'latest'
+haproxy_consul_image: "ciscocloud/haproxy-consul:{{haproxy_consul_version}}"

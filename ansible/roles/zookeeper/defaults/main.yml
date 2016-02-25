@@ -1,0 +1,30 @@
+---
+# defaults file for zookeeper
+zookeeper_version: 'latest'
+zookeeper_image: "indigodatacloud/zookeeper:{{zookeeper_version}}"
+zookeeper_client_port: 2181
+zookeeper_leader_connect_port: 2888
+zookeeper_leader_election_port: 3888
+zookeeper_server_group: zookeeper_servers
+zookeeper_servers_list: "
+{%- if zookeeper_host_list is defined -%}
+   {{ zookeeper_host_list|join(',') }}
+{%- else -%}
+   {{ groups[zookeeper_server_group]|join(',') }}
+{%- endif -%}
+"
+zookeeper_id: "
+	{%- if zookeeper_host_list is defined -%}
+		{%- for host in zookeeper_host_list -%}
+			{%- if host == ansible_eth0.ipv4.address -%}
+	        	{{ loop.index }}
+			{%- endif -%}
+		{%- endfor -%}
+	{%- else -%}
+    	{%- for host in groups[zookeeper_server_group] -%}
+      		{%- if host == 'default' or host == inventory_hostname or host == ansible_fqdn or host in ansible_all_ipv4_addresses -%}
+        		{{ loop.index }}
+  			{%- endif -%}
+    	{%- endfor -%}
+    {%- endif -%}
+"
