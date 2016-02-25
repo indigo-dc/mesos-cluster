@@ -1,5 +1,7 @@
 Ansible roles to deploy a mesos cluster with Marathon and Chronos framework.
+
 Service-discovery and load-balancing ensured by Consul, dnsmasq, mesos-consul, marathon-consul, haproxy-consul.
+
 Marathon and Chronos endpoints are SSL-enabled with HTTP basic authentication (username/password).
 
 ## Dependencies
