@@ -20,7 +20,7 @@ zookeeper_peers_nodes: "
 
 # defaults file for chronos
 openssl_self_signed:
- - { name : "{{ ansible_default_ipv4.address }}" }
+ - { name : "{{ chronos.service.consul }}" }
 generate_random_pass: "true"
 chronos_key_password: "password"
 chronos_pkcs_password: "password"
