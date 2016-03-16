@@ -3,6 +3,12 @@
   apt: name="dnsmasq" state=present
   tags: dnsmasq
 
+- name: Bind dnsmasq to localhost and docker bridge
+  lineinfile: dest=/etc/dnsmasq.conf state=present line="{{item}}"
+  with_items:
+   - "listen-address=127.0.0.1"
+   - "listen-address={{ docker_bridge_ip }}"
+
 - name: configure consul resolution dnsmasq
   template:
     src: 10-consul.j2
