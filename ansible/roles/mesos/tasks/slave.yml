@@ -23,6 +23,7 @@
     volumes:
     - "/sys/fs/cgroup:/sys/fs/cgroup"
     - "/var/run/docker.sock:/var/run/docker.sock"
+    - "/tmp/mesos:/{{ mesos_slave_work_dir }}"
     net: "host"
     env:
       MESOS_MASTER: "zk://{{ zookeeper_peers_nodes }}/mesos"
