@@ -162,7 +162,7 @@ resources:
     properties:
       count: 2
       resource_def:
-        type: loadbalancer.yaml
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/loadbalancer.yaml
         properties:
           server_name: lb%index%
           ssh_key_name: {get_param: ssh_key_name}
@@ -184,7 +184,7 @@ resources:
       inputs:
       - name: role_list
         type: CommaDelimitedList 
-      config: { get_file: setup.sh }
+      config: { get_file: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh }
 
    
   ######################################################################
@@ -253,7 +253,7 @@ resources:
     properties:
       count: {get_param: number_of_masters}
       resource_def:
-         type: mesosnode.yaml
+         type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
          properties: 
             server_name: mesos-m%index%
             ssh_key_name: {get_param: ssh_key_name}
@@ -314,7 +314,7 @@ resources:
     properties:
       count: {get_param: number_of_slaves}
       resource_def:
-        type: mesosnode.yaml
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
         properties:
           server_name: mesos-s%index%
           ssh_key_name: {get_param: ssh_key_name}
