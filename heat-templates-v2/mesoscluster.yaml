@@ -184,7 +184,7 @@ resources:
       inputs:
       - name: role_list
         type: CommaDelimitedList 
-      config: { get_file: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh }
+      config: { get_file: 'https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh' }
 
    
   ######################################################################
