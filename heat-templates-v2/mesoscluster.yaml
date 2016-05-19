@@ -41,7 +41,7 @@ parameters:
   number_of_slaves:
     type: number
     description: how many mesos slaves to spawn initially
-    default: 1
+    default: 5
 
   loadbalancer_flavor:
     type: string
@@ -123,6 +123,8 @@ resources:
     properties:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
+      input_values: 
+        role_list: "docker, consul, haproxy-consul, keepalived"
 
   loadbalancer_config:
     type: OS::Heat::SoftwareConfig
@@ -134,15 +136,13 @@ resources:
         - name: keepalived_virtual_ip
       config: |
               ---
-              - name: Apply Load Balancer Roles
-                hosts: localhost
+              - hosts: localhost
                 connection: local
                 roles:
-                  - { role: docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
-                  - { role: dnsmasq, docker_bridge_ip: "172.0.17.1" }
-                  - { role: haproxy-consul }
-                  - { role: keepalived }
+                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.haproxy-consul }
+                  - { role: indigo-dc.keepalived }
 
   loadbalancer_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -162,7 +162,7 @@ resources:
     properties:
       count: 2
       resource_def:
-        type: loadbalancer.yaml
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/loadbalancer.yaml
         properties:
           server_name: lb%index%
           ssh_key_name: {get_param: ssh_key_name}
@@ -181,7 +181,10 @@ resources:
     type: OS::Heat::SoftwareConfig
     properties:
       group: script
-      config: { get_file: setup.sh }
+      inputs:
+      - name: role_list
+        type: CommaDelimitedList 
+      config: { get_file: 'https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh' }
 
    
   ######################################################################
@@ -204,17 +207,15 @@ resources:
         - name: chronos_password
       config: |
               ---
-              - name: Apply Mesos Master Roles
-                hosts: localhost
+              - hosts: localhost
                 connection: local
                 roles:
-                  - { role: docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
-                  - { role: dnsmasq, docker_bridge_ip: "172.0.17.1" }
-                  - { role: zookeeper }
-                  - { role: mesos, mesos_install_mode: "master" }
-                  - { role: marathon }
-                  - { role: chronos }
+                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.zookeeper }
+                  - { role: indigo-dc.mesos, mesos_install_mode: "master" }
+                  - { role: indigo-dc.marathon }
+                  - { role: indigo-dc.chronos }
 
 
 
@@ -227,6 +228,8 @@ resources:
     properties:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
+      input_values:
+        role_list: "consul, zookeeper, mesos, marathon, chronos"
 
   master_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -250,7 +253,7 @@ resources:
     properties:
       count: {get_param: number_of_masters}
       resource_def:
-         type: mesosnode.yaml
+         type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
          properties: 
             server_name: mesos-m%index%
             ssh_key_name: {get_param: ssh_key_name}
@@ -272,6 +275,8 @@ resources:
     properties:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
+      input_values:
+        role_list: "docker, consul, mesos"
 
   slave_config:
     type: OS::Heat::SoftwareConfig
@@ -284,14 +289,12 @@ resources:
           type: CommaDelimitedList
       config: |
               ---
-              - name: Apply Mesos Slave Roles
-                hosts: localhost
+              - hosts: localhost
                 connection: local
                 roles:
-                 - { role: docker, docker_bridge_ip: "172.0.17.1" }
-                 - { role: consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
-                 - { role: dnsmasq, docker_bridge_ip: "172.0.17.1" }
-                 - { role: mesos, mesos_install_mode: "slave" }
+                 - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
 
 
   slave_deployment:
@@ -311,7 +314,7 @@ resources:
     properties:
       count: {get_param: number_of_slaves}
       resource_def:
-        type: mesosnode.yaml
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
         properties:
           server_name: mesos-s%index%
           ssh_key_name: {get_param: ssh_key_name}
