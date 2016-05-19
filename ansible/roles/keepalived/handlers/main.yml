@@ -1,3 +1,0 @@
-- name: restart networking
-  shell: ifup eth0:0
-  when: virtual_interface.changed
