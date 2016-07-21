@@ -138,6 +138,9 @@ resources:
               ---
               - hosts: localhost
                 connection: local
+                pre_tasks:
+                  - name: Update /etc/hosts
+                    lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
                   - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
                   - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
@@ -209,6 +212,9 @@ resources:
               ---
               - hosts: localhost
                 connection: local
+                pre_tasks:
+                  - name: Update /etc/hosts
+                    lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
                   - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
                   - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
@@ -291,6 +297,9 @@ resources:
               ---
               - hosts: localhost
                 connection: local
+                pre_tasks:
+                  - name: Update /etc/hosts
+                    lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
                  - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
