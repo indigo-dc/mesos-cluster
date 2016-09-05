@@ -16,7 +16,6 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 - Marathon to deploy, monitor and scale *Long-Running* services, ensuring that they are always up and running.
 - Chronos to run *user applications* (jobs), taking care of fetching input data, handling dependencies among jobs, rescheduling failed jobs.
 
-The deployment of the Mesos cluster (+ Marathon/Chronos) is performed automatically by the INDIGO Orchestrator 
 
 ## Features
 
