@@ -31,9 +31,11 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 
 ### INDIGO achievements
 - [Ansible roles](#ansible-roles) and [TOSCA templates](https://github.com/indigo-dc/tosca-templates/blob/master/mesos_cluster.yaml) for cluster set-up featuring high-availability, service-discovery and load-balancing; 
+- Integration with the INDIGO [Orchestrator](https://www.gitbook.com/book/indigo-dc/orchestrator/details) 
+  - Job submission and service deployment requests are described through TOSCA templates
+- Definition of custom TOSCA [types]([](https://github.com/indigo-dc/tosca-types/blob/master/custom_types.yaml#L506)) for describing Chronos jobs and Marathon application  
 - Cluster elasticity through [EC3/CLUES](https://github.com/indigo-dc/clues-indigo) plugin
 - Zabbix monitoring [probes](https://github.com/indigo-dc/Monitoring) for Mesos, Marathon and Chronos;
-
 
 
 ## Components
@@ -46,8 +48,8 @@ The core components are:
 - [Marathon](https://mesosphere.github.io/marathon) for cluster management of long running containerized services
 - [Docker](http://docker.io) container runtime
 - [mesos-consul](https://github.com/CiscoCloud/mesos-consul) populating Consul service discovery with Mesos tasks
-- [marathon-consul](https://github.com/CiscoCloud/marathon-consul)
-- [haproxy-consul] (https://github.com/CiscoCloud/haproxy-consul) for dynamic haproxy configuration using consul
+- [marathon-consul](https://github.com/CiscoCloud/marathon-consul) bridging Marathon information to Consul KV
+- [haproxy-consul](https://github.com/CiscoCloud/haproxy-consul) for dynamic haproxy configuration using Consul
 
 These components are distributed on the cluster nodes as shown in the diagram below.
 
