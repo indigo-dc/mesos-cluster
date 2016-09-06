@@ -1,10 +1,10 @@
 # Mesos Cluster 
 
-The INDIGO-DataCloud PaaS relies on Apache Mesos for:
+The **INDIGO-DataCloud PaaS** relies on Apache Mesos for:
 - managed service deployment 
 - user applications execution
 
-The instantiation of the high-available Mesos cluster is managed by the INDIGO Orchestrator in a fully automated way as soon as a user request described by a TOSCA template is submitted. Once the cluster is up and running, it can be re-used for successive requests.
+The instantiation of the high-available Mesos cluster is managed by the INDIGO *[Orchestrator](https://www.gitbook.com/book/indigo-dc/orchestrator/details)* in a fully automated way as soon as a user request described by a TOSCA template is submitted. Once the cluster is up and running, it can be re-used for successive requests.
 
 **Mesos** is able to manage cluster resources (cpu, mem) providing isolation and sharing across distributed applications (frameworks)
 
@@ -13,7 +13,7 @@ The instantiation of the high-available Mesos cluster is managed by the INDIGO O
 Sophisticated two-level scheduling and efficient resource isolation are the key-features of the Mesos middleware that are exploited in the INDIGO PaaS, in order to run different workloads (long-running services, batch jobs, etc) on the same resources while preserving isolation and prioritizing their execution.
 
 **INDIGO** *PaaS* uses:
-- Marathon to deploy, monitor and scale *Long-Running* services, ensuring that they are always up and running.
+- Marathon to deploy, monitor and scale *Long-Running services*, ensuring that they are always up and running.
 - Chronos to run *user applications* (jobs), taking care of fetching input data, handling dependencies among jobs, rescheduling failed jobs.
 
 
@@ -28,6 +28,13 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
   - services are automatically registered in Consul as soon as they are deployed on the cluster
 - The external access to the deployed services is ensured through load-balancers in HA (unique entrypoint: cluster Virtual IP)
 - Cluster elasticity and application auto-scaling through CLUES plugin 
+
+### INDIGO achievements
+- [Ansible roles](#ansible-roles) and [TOSCA templates](https://github.com/indigo-dc/tosca-templates/blob/master/mesos_cluster.yaml) for cluster set-up featuring high-availability, service-discovery and load-balancing; 
+- Cluster elasticity through [EC3/CLUES](https://github.com/indigo-dc/clues-indigo) plugin
+- Zabbix monitoring [probes](https://github.com/indigo-dc/Monitoring) for Mesos, Marathon and Chronos;
+
+
 
 ## Components
 
@@ -75,4 +82,26 @@ The following roles are available in Ansible Galaxy:
   - source: https://github.com/indigo-dc/ansible-role-keepalived
 
 These ansible roles can be installed through *ansible-galaxy* command: `ansible-galaxy install indigo-dc.rolename`
+
+## References
+- **Apache mesos** 
+  - Web site: http://mesos.apache.org/
+  - Documentation: http://mesos.apache.org/documentation/latest/
+  - Releases: http://mesos.apache.org/downloads/
+  - Code repo: https://github.com/apache/mesos
+  - Issue Tracker: https://issues.apache.org/jira/browse/MESOS
+
+- **Marathon**
+  - Web site: https://mesosphere.github.io/marathon/
+  - Documentation: https://mesosphere.github.io/marathon/docs/
+  - Releases: https://github.com/mesosphere/marathon/releases
+  - Code repo: https://github.com/mesosphere/marathon
+  - Issue Tracker: https://github.com/mesosphere/marathon/issues	
+
+- **Chronos**
+  - Web site: https://mesos.github.io/chronos/
+  - Documentation: https://mesos.github.io/chronos/docs/
+  - Releases: https://github.com/mesos/chronos/releases
+  - Code repo: https://github.com/mesos/chronos
+  - Issue tracker: https://github.com/mesos/chronos/issues
 
