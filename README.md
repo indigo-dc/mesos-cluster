@@ -1,6 +1,6 @@
 # Mesos Cluster 
 
-The **INDIGO-DataCloud PaaS** relies on Apache Mesos for:
+The **INDIGO-DataCloud PaaS** relies on [Apache Mesos](http://mesos.apache.org/) for:
 - managed service deployment 
 - user applications execution
 
@@ -8,7 +8,7 @@ The instantiation of the high-available Mesos cluster is managed by the INDIGO *
 
 **Mesos** is able to manage cluster resources (cpu, mem) providing isolation and sharing across distributed applications (frameworks)
 
-**Marathon** and **Chronos** are two powerful frameworks that can be deployed on top of a Mesos Cluster.
+**[Marathon](https://mesosphere.github.io/marathon/)** and **[Chronos](https://mesos.github.io/chronos/)** are two powerful frameworks that can be deployed on top of a Mesos Cluster.
 
 Sophisticated two-level scheduling and efficient resource isolation are the key-features of the Mesos middleware that are exploited in the INDIGO PaaS, in order to run different workloads (long-running services, batch jobs, etc) on the same resources while preserving isolation and prioritizing their execution.
 
