@@ -85,6 +85,13 @@ The following roles are available in Ansible Galaxy:
 
 These ansible roles can be installed through *ansible-galaxy* command: `ansible-galaxy install indigo-dc.rolename`
 
+## Releases
+
+| Release  | Component version |
+| ------------- | ------------- |
+| indigo_1  | Mesos 0.28.0 <br> Marathon 1.1.1 <br> Chronos 2.4.0 |
+
+
 ## References
 - **Apache mesos** 
   - Web site: http://mesos.apache.org/
