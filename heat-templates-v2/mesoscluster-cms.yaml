@@ -219,6 +219,7 @@ resources:
         - name: marathon_password
         - name: chronos_username
         - name: chronos_password
+        - name: cms_config_mysquid_host
       config: |
               ---
               - hosts: localhost
@@ -235,6 +236,7 @@ resources:
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
                   - { role: indigo-dc.chronos }
+                  - { role: indigo-dc.cms_config }
 
 
 
@@ -248,7 +250,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
       input_values:
-        role_list: "consul, zookeeper, mesos, marathon, chronos"
+        role_list: "consul, zookeeper, mesos, marathon, chronos, cms_config"
 
   master_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -266,6 +268,7 @@ resources:
         marathon_password: {get_param: marathon_password}
         chronos_username: {get_param: chronos_username}
         chronos_password: {get_param: chronos_password}
+        cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
 
   mesos_masters:
     type: OS::Heat::ResourceGroup
@@ -306,6 +309,7 @@ resources:
           type: CommaDelimitedList
         - name: consul_servers
           type: CommaDelimitedList
+        - name: cms_config_mysquid_host
       config: |
               ---
               - hosts: localhost
@@ -318,8 +322,8 @@ resources:
                 roles:
                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
                  - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.cms_config, cms_config_node: "wn" }
                  - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
-                 - { role: indigo-dc.cms_config }
 
 
   slave_deployment:
@@ -332,6 +336,8 @@ resources:
       input_values:
         zookeeper_peers: {get_attr: [mesos_masters, mesos_server_ip]}
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
+        cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+
 
 
   mesos_slaves:
