@@ -56,13 +56,6 @@ parameters:
     type: string
     description: password to access Marathon endpoint
 
-  chronos_username:
-    type: string
-    description: username to access Chronos endpoint
-
-  chronos_password:
-    type: string
-    description: password to access Chronos endpoint
 
 resources:
   ######################################################################
@@ -217,9 +210,8 @@ resources:
         - name: zookeeper_peers
         - name: marathon_username
         - name: marathon_password
-        - name: chronos_username
-        - name: chronos_password
         - name: cms_config_mysquid_host
+        - name: cms_config_proxycache_host
       config: |
               ---
               - hosts: localhost
@@ -235,7 +227,6 @@ resources:
                   - { role: indigo-dc.zookeeper }
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
-                  - { role: indigo-dc.chronos }
                   - { role: indigo-dc.cms_config }
 
 
@@ -250,7 +241,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
       input_values:
-        role_list: "consul, zookeeper, mesos, marathon, chronos, cms_config"
+        role_list: "consul, zookeeper, mesos, marathon, cms_config"
 
   master_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -266,9 +257,8 @@ resources:
         zookeeper_peers: "{{mesos_masters_list}}"
         marathon_username: {get_param: marathon_username}
         marathon_password: {get_param: marathon_password}
-        chronos_username: {get_param: chronos_username}
-        chronos_password: {get_param: chronos_password}
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+        cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
 
   mesos_masters:
     type: OS::Heat::ResourceGroup
@@ -310,6 +300,7 @@ resources:
         - name: consul_servers
           type: CommaDelimitedList
         - name: cms_config_mysquid_host
+        - name: cms_config_proxycache_host
       config: |
               ---
               - hosts: localhost
@@ -337,6 +328,7 @@ resources:
         zookeeper_peers: {get_attr: [mesos_masters, mesos_server_ip]}
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+        cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
 
 
 
