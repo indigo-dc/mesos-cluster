@@ -215,6 +215,7 @@ resources:
         - name: marathon_password
         - name: cms_config_mysquid_host
         - name: cms_config_proxycache_host
+        - name: cms_config_iamtoken
       config: |
               ---
               - hosts: localhost
@@ -262,6 +263,7 @@ resources:
         marathon_password: {get_param: marathon_password}
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
+        cms_config_iamtoken: { get_param: iam_token }
 
   mesos_masters:
     type: OS::Heat::ResourceGroup
@@ -304,7 +306,6 @@ resources:
           type: CommaDelimitedList
         - name: cms_config_mysquid_host
         - name: cms_config_proxycache_host
-        - name: cms_config_iamtoken
       config: |
               ---
               - hosts: localhost
@@ -333,7 +334,6 @@ resources:
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
-        cms_config_iamtoken: { get_param: iam_token }
 
 
   mesos_slaves:
