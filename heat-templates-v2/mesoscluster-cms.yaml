@@ -318,9 +318,8 @@ resources:
                 roles:
                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
                  - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
-                 - { role: indigo-dc.cms_config, cms_config_node: "wn" }
                  - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
-
+                 - { role: indigo-dc.cms_config, cms_config_node: "wn" }
 
   slave_deployment:
     type: OS::Heat::SoftwareDeployments
