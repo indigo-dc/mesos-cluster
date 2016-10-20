@@ -231,7 +231,7 @@ resources:
                   - { role: indigo-dc.zookeeper }
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
-                  - { role: indigo-dc.cms_config, cms_config_wn_image: "spiga/cmswn_2" }
+                  - { role: indigo-dc.cms_config, cms_config_wn_image: "spiga/cmswndemo" }
 
 
 
