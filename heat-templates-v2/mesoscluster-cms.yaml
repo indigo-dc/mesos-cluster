@@ -59,6 +59,29 @@ parameters:
   iam_token:
     type: string
 
+  cms_local_site: 
+    type: string
+
+  cms_stageoutsite: 
+    type: string
+
+  cms_stageoutserver: 
+    type: string
+
+  cms_stageoutprefix: 
+    type: string
+
+  cms_squid_image:
+    type: string
+    default: "spiga/frontiersquidv1"
+
+  cms_wn_image:
+    type: string
+    default: "spiga/cmswndemo_v2"
+
+  cms_proxycache_image:
+    type: string
+    default: "spiga/ttsinterface_v1"
 
 resources:
   ######################################################################
@@ -215,6 +238,13 @@ resources:
         - name: marathon_password
         - name: cms_config_mysquid_host
         - name: cms_config_proxycache_host
+        - name: cms_config_cms_local_site
+        - name: cms_config_stageoutsite
+        - name: cms_config_stageoutserver
+        - name: cms_config_stageoutprefix
+        - name: cms_config_squid_image
+        - name: cms_config_wn_image
+        - name: cms_config_proxycache_image
         - name: cms_config_iamtoken
       config: |
               ---
@@ -231,7 +261,7 @@ resources:
                   - { role: indigo-dc.zookeeper }
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
-                  - { role: indigo-dc.cms_config, cms_config_wn_image: "spiga/cmswndemo" }
+                  - { role: indigo-dc.cms_config }
 
 
 
@@ -263,6 +293,13 @@ resources:
         marathon_password: {get_param: marathon_password}
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
+        cms_config_cms_local_site: {get_param: cms_local_site}
+        cms_config_stageoutsite: {get_param: cms_stageoutsite}
+        cms_config_stageoutserver: {get_param: cms_stageoutserver}
+        cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
+        cms_config_squid_image: {get_param: cms_squid_image}
+        cms_config_wn_image: {get_param: cms_wn_image}
+        cms_config_proxycache_image: {get_param: cms_proxycache_image}
         cms_config_iamtoken: { get_param: iam_token }
 
   mesos_masters:
@@ -306,6 +343,11 @@ resources:
           type: CommaDelimitedList
         - name: cms_config_mysquid_host
         - name: cms_config_proxycache_host
+        - name: cms_config_cms_local_site
+        - name: cms_config_stageoutsite
+        - name: cms_config_stageoutserver
+        - name: cms_config_stageoutprefix
+
       config: |
               ---
               - hosts: localhost
@@ -333,6 +375,10 @@ resources:
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
+        cms_config_cms_local_site: {get_param: cms_local_site}
+        cms_config_stageoutsite: {get_param: cms_stageoutsite}
+        cms_config_stageoutserver: {get_param: cms_stageoutserver}
+        cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
 
 
   mesos_slaves:
