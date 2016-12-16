@@ -14,4 +14,7 @@ rm ansible_2.1.1.0-1~ubuntu16.04.1_all.deb
 echo $role_list
 for role in $role_list; do 
   ansible-galaxy install indigo-dc.$role;
+  if [ "$role" == "mesos-rexray" ]; then
+     git clone https://github.com/indigo-dc/ansible-role-mesos.git -b enable_dvdi_mod /etc/ansible/roles/indigo-dc.mesos
+  fi
 done 

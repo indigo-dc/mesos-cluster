@@ -1,0 +1,412 @@
+heat_template_version: 2014-10-16
+
+description: >
+   This template defines a Mesos Cluster that consist of: 
+   a set of masters running also Marathon and Chronos Frameworks;
+   a set of slaves;
+   two Load Balancers with a Virtual IP.
+   Service-discovery and load-balacing is implemented using Consul, dnsmasq,
+   mesos-consul, marathon-consul and haproxy-consul
+
+parameters:
+
+  ssh_key_name:
+    type: string
+    description: name of ssh key to be provisioned on our server
+
+  network:
+    type: string
+    description: uuid/name of a network to use for ip addresses
+
+  server_image:
+    type: string
+    default: "Ubuntu 14.04.3 LTS (HEAT)"
+    description: glance image used to boot the server
+
+  master_flavor:
+    type: string
+    default: m1.medium
+    description: flavor to use when booting the server
+
+  number_of_masters:
+    type: number
+    description: how many mesos masters to spawn initially
+    default: 1
+
+  slave_flavor:
+    type: string
+    default: m1.small
+    description: flavor to use when booting the server
+
+  number_of_slaves:
+    type: number
+    description: how many mesos slaves to spawn initially
+    default: 4
+
+  loadbalancer_flavor:
+    type: string
+    default: m1.small
+    description: flavor to use when booting the loadbalancer server
+
+  marathon_username:
+    type: string
+    description: username to access Marathon endpoint
+
+  marathon_password:
+    type: string
+    description: password to access Marathon endpoint
+
+  chronos_username:
+    type: string
+    description: username to access Chronos endpoint
+
+  chronos_password:
+    type: string
+    description: password to access Chronos endpoint
+
+  rexray_os_authurl:
+    type: string
+
+  rexray_os_username:
+    type: string
+
+  rexray_os_password:
+    type: string
+
+  rexray_os_tenantname:
+    type: string
+
+  rexray_os_regionname: 
+    type: string
+
+resources:
+  ######################################################################
+  #
+  # security groups.  we need to permit network traffic of various
+  # sorts.
+  #
+
+  secgroup_base:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: icmp
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - protocol: tcp
+          remote_mode: remote_group_id
+
+  secgroup_mesos:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: tcp
+          port_range_min: 5050
+          port_range_max: 5050
+        - protocol: tcp
+          port_range_min: 8443
+          port_range_max: 8443
+        - protocol: tcp
+          port_range_min: 4443
+          port_range_max: 4443
+
+  # Required by  <slave>/monitoring/statisics.json resource
+  secgroup_slaves:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: tcp
+          port_range_min: 5051
+          port_range_max: 5051
+
+  secgroup_all_open:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - protocol: icmp
+        - protocol: tcp
+        - protocol: udp
+
+
+  vip_port:
+    type: OS::Neutron::Port
+    properties:
+      network: {get_param: network}
+      security_groups:
+        - get_resource: secgroup_all_open
+      replacement_policy: AUTO
+
+
+  ######################################################################
+  #
+  # Load Balancers SoftwareConfig.
+  #
+  loadbalancer_setup_deployment:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      config: {get_resource: ansible_setup_config}
+      servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
+      input_values: 
+        role_list: "docker, consul, haproxy-consul, keepalived"
+
+  loadbalancer_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+        - name: consul_servers
+          type: CommaDelimitedList
+        - name: keepalived_virtual_ip
+      config: |
+              ---
+              - hosts: localhost
+                connection: local
+                pre_tasks:
+                  - name: Fix /etc/hosts
+                    lineinfile: dest=/etc/hosts regexp='^127\.0\.1\.1' line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
+                  - name: Update /etc/hosts
+                    lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
+                roles:
+                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.haproxy-consul }
+                  - { role: indigo-dc.keepalived }
+
+  loadbalancer_deployment:
+    type: OS::Heat::SoftwareDeployments
+    depends_on:
+      - loadbalancer_setup_deployment
+    properties:
+      config: {get_resource: loadbalancer_config}
+      servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
+      input_values:
+        consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
+        load_balancers_list: {get_attr: [loadbalancers, loadbalancer_ip]}
+        keepalived_virtual_ip: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+  
+
+  loadbalancers:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/loadbalancer.yaml
+        properties:
+          server_name: lb%index%
+          ssh_key_name: {get_param: ssh_key_name}
+          server_image: {get_param: server_image}
+          server_flavor: {get_param: loadbalancer_flavor}
+          network: {get_param: network}
+          virtual_ip: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+          security_groups:
+              - {get_resource: secgroup_base}
+              - {get_resource: secgroup_all_open}
+
+
+  #########
+  # Common config
+  ansible_setup_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      inputs:
+      - name: role_list
+        type: CommaDelimitedList 
+      config: { get_file: 'https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh' }
+
+   
+  ######################################################################
+  #
+  # Master SoftwareConfig.
+  #
+  master_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+        - name: mesos_masters_list
+          type: CommaDelimitedList
+        - name: consul_servers
+        - name: zookeeper_host_list
+        - name: zookeeper_peers
+        - name: marathon_username
+        - name: marathon_password
+        - name: chronos_username
+        - name: chronos_password
+      config: |
+              ---
+              - hosts: localhost
+                connection: local
+                pre_tasks:
+                  - name: Fix /etc/hosts
+                    lineinfile: dest=/etc/hosts regexp='^127\.0\.1\.1' line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
+                  - name: Update /etc/hosts
+                    lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
+                roles:
+                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.zookeeper }
+                  - { role: indigo-dc.mesos, mesos_install_mode: "master" }
+                  - { role: indigo-dc.marathon }
+                  - { role: indigo-dc.chronos }
+
+
+
+  ######################################################################
+  #
+  # Master SoftwareDeployment.
+  #
+  master_setup_deployment:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      config: {get_resource: ansible_setup_config}
+      servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
+      input_values:
+        role_list: "consul, zookeeper, mesos, marathon, chronos"
+
+  master_deployment:
+    type: OS::Heat::SoftwareDeployments
+    depends_on:
+      - master_setup_deployment
+    properties:
+      config: {get_resource: master_config}
+      servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}
+      input_values:
+        mesos_masters_list: {get_attr: [mesos_masters, mesos_server_ip]}
+        consul_servers: "{{mesos_masters_list}}"
+        zookeeper_host_list: "{{mesos_masters_list}}"
+        zookeeper_peers: "{{mesos_masters_list}}"
+        marathon_username: {get_param: marathon_username}
+        marathon_password: {get_param: marathon_password}
+        chronos_username: {get_param: chronos_username}
+        chronos_password: {get_param: chronos_password}
+
+  mesos_masters:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: {get_param: number_of_masters}
+      resource_def:
+         type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
+         properties: 
+            server_name: mesos-m%index%
+            ssh_key_name: {get_param: ssh_key_name}
+            server_image: {get_param: server_image}
+            server_flavor: {get_param: master_flavor}
+            network: {get_param: network}
+            security_groups:
+              - {get_resource: secgroup_base}
+              - {get_resource: secgroup_mesos}
+
+
+  ######################################################################
+  #
+  # Mesos slaves. This is a resource group that will initially
+  # create <number_of_slaves> slaves, and needs to be manually scaled.
+  #
+  slave_setup_deployment:
+    type: OS::Heat::SoftwareDeployments
+    properties:
+      config: {get_resource: ansible_setup_config}
+      servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
+      input_values:
+        role_list: "docker, consul, mesos-rexray"
+
+  slave_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+        - name: zookeeper_peers
+          type: CommaDelimitedList
+        - name: consul_servers
+          type: CommaDelimitedList
+        - name: mesos_rexray_os_authurl
+        - name: mesos_rexray_os_username
+        - name: mesos_rexray_os_password
+        - name: mesos_rexray_os_tenantname
+        - name: mesos_rexray_os_regionname
+      config: |
+              ---
+              - hosts: localhost
+                connection: local
+                pre_tasks:
+                  - name: Fix /etc/hosts
+                    lineinfile: dest=/etc/hosts regexp='^127\.0\.1\.1' line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
+                  - name: Update /etc/hosts
+                    lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
+                roles:
+                 - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
+
+
+  slave_deployment:
+    type: OS::Heat::SoftwareDeployments
+    depends_on:
+      - slave_setup_deployment
+    properties:
+      config: {get_resource: slave_config}
+      servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
+      input_values:
+        zookeeper_peers: {get_attr: [mesos_masters, mesos_server_ip]}
+        consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
+        mesos_rexray_os_authurl: {get_param: rexray_os_authurl}
+        mesos_rexray_os_username: {get_param: rexray_os_username }
+        mesos_rexray_os_password: {get_param: rexray_os_password }
+        mesos_rexray_os_tenantname: {get_param: rexray_os_tenantname}
+        mesos_rexray_os_regionname: {get_param: rexray_os_regionname}
+
+
+  mesos_slaves:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: {get_param: number_of_slaves}
+      resource_def:
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
+        properties:
+          server_name: mesos-s%index%
+          ssh_key_name: {get_param: ssh_key_name}
+          server_image: {get_param: server_image}
+          server_flavor: {get_param: slave_flavor}
+          network: {get_param: network}
+          security_groups:
+               - {get_resource: secgroup_base}
+               - {get_resource: secgroup_slaves}
+
+outputs:
+
+  mesos_master_ips:
+    value: {get_attr: [mesos_masters, mesos_server_ip]}
+    description: >
+      This is a list of the  addresses of all the Mesos masters.
+
+  mesos_slaves_ips:
+    value: {get_attr: [mesos_slaves, mesos_server_ip]}
+    description: >
+      This is a list of the addresses of all the Mesos slaves
+
+  loadbalancers_vip:
+    value: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+    description: >
+      This is the Load Balancers Virtual IP 
+
+  cluster_endpoints:
+    description: Cluster endpoints
+    value:
+      "Mesos":
+        str_replace:
+          params:
+            host: { get_attr: [ mesos_masters, resource.0, mesos_server_ip ] }
+          template: "http://host:5050"
+      "Marathon":
+        str_replace:
+          params:
+            host: { get_attr: [ mesos_masters, resource.0, mesos_server_ip ] }
+          template: "https://host:8443"
+      "Chronos":
+        str_replace:
+          params:
+            host: { get_attr: [ mesos_masters, resource.0, mesos_server_ip ] }
+          template: "https://host:4443"
+
