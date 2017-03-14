@@ -77,11 +77,11 @@ parameters:
 
   cms_wn_image:
     type: string
-    default: "spiga/cmswndemo_v2"
+    default: "ciangom/cmswnitb"
 
   cms_proxycache_image:
     type: string
-    default: "spiga/ttsinterface_v1"
+    default: "ciangom/ttsinterface"
 
 resources:
   ######################################################################
@@ -172,10 +172,10 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.haproxy-consul }
-                  - { role: indigo-dc.keepalived }
+                  - { role: Cloud-PG.docker, docker_bridge_ip: "172.0.17.1" }
+                  - { role: Cloud-PG.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
+                  - { role: Cloud-PG.haproxy-consul }
+                  - { role: Cloud-PG.keepalived }
 
   loadbalancer_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -195,7 +195,7 @@ resources:
     properties:
       count: 2
       resource_def:
-        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/loadbalancer.yaml
+        type: https://raw.githubusercontent.com/Cloud-PG/mesos-cluster/devel/heat-templates-v2/loadbalancer.yaml
         properties:
           server_name: lb%index%
           ssh_key_name: {get_param: ssh_key_name}
@@ -217,7 +217,7 @@ resources:
       inputs:
       - name: role_list
         type: CommaDelimitedList 
-      config: { get_file: 'https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh' }
+      config: { get_file: 'https://raw.githubusercontent.com/Cloud-PG/mesos-cluster/devel/heat-templates-v2/setup.sh' }
 
    
   ######################################################################
@@ -256,12 +256,12 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.zookeeper }
-                  - { role: indigo-dc.mesos, mesos_install_mode: "master" }
-                  - { role: indigo-dc.marathon }
-                  - { role: indigo-dc.cms_config }
+                  - { role: Cloud-PG.docker, docker_bridge_ip: "172.0.17.1" }
+                  - { role: Cloud-PG.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
+                  - { role: Cloud-PG.zookeeper }
+                  - { role: Cloud-PG.mesos, mesos_install_mode: "master" }
+                  - { role: Cloud-PG.marathon }
+                  - { role: Cloud-PG.cms_config }
 
 
 
@@ -307,7 +307,7 @@ resources:
     properties:
       count: {get_param: number_of_masters}
       resource_def:
-         type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
+         type: https://raw.githubusercontent.com/Cloud-PG/mesos-cluster/devel/heat-templates-v2/mesosnode.yaml
          properties: 
             server_name: mesos-m%index%
             ssh_key_name: {get_param: ssh_key_name}
@@ -358,10 +358,10 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                 - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
-                 - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
-                 - { role: indigo-dc.cms_config, cms_config_node: "wn" }
+                 - { role: Cloud-PG.docker, docker_bridge_ip: "172.0.17.1" }
+                 - { role: Cloud-PG.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: Cloud-PG.mesos, mesos_install_mode: "slave" }
+                 - { role: Cloud-PG.cms_config, cms_config_node: "wn" }
 
   slave_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -386,7 +386,7 @@ resources:
     properties:
       count: {get_param: number_of_slaves}
       resource_def:
-        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
+        type: https://raw.githubusercontent.com/Cloud-PG/mesos-cluster/devel/heat-templates-v2/mesosnode.yaml
         properties:
           server_name: mesos-s%index%
           ssh_key_name: {get_param: ssh_key_name}
