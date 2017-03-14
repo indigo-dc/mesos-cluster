@@ -16,6 +16,6 @@ for role in $role_list; do
   if [ "$role" == "mesos-rexray" ]; then
      git clone https://github.com/indigo-dc/ansible-role-mesos.git -b enable_dvdi_mod /etc/ansible/roles/indigo-dc.mesos
   else
-     ansible-galaxy install indigo-dc.$role;
+     ansible-galaxy install Cloud-PG.$role;
   fi
 done 
