@@ -2,7 +2,7 @@
 
 IAM_CLIENT_ID=cms-demo
 IAM_CLIENT_SECRET=cms-demo
-IAM_USER=manuel.ciangottini
+IAM_USER=
 
 IAM_CLIENT_ID=${IAM_CLIENT_ID:-iam-client}
 IAM_CLIENT_SECRET=${IAM_CLIENT_SECRET}
