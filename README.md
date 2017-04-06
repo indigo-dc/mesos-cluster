@@ -90,7 +90,7 @@ These ansible roles can be installed through *ansible-galaxy* command: `ansible-
 | Release  | Component version |
 | ------------- | ------------- |
 | indigo_1  | Mesos 0.28.0 <br> Marathon 1.1.1 <br> Chronos 2.4.0 |
-
+| indigo_2  | Mesos 1.1.0 <br> Marathon 1.4.1 <br> Chronos 3.0.2 |
 
 ## References
 - **Apache mesos** 
