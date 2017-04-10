@@ -5,7 +5,7 @@ apt-get install -y python-paramiko python-netaddr
 apt-get install -y software-properties-common
 apt-add-repository -y ppa:ansible/ansible
 apt-get update
-apt-get install -y ansible
+apt-get install -y ansible=2.2.1.0-1ppa~trusty
 #wget http://launchpadlibrarian.net/291371956/ansible_2.1.1.0-1~ubuntu16.04.1_all.deb
 #dpkg -i ansible_2.1.1.0-1~ubuntu16.04.1_all.deb
 #rm ansible_2.1.1.0-1~ubuntu16.04.1_all.deb
