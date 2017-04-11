@@ -1,7 +1,7 @@
 ## Instructions
 
 <pre>
-# git clone https://github.com/Cloud-PG/mesos-cluster.git
+# git clone -b devel https://github.com/Cloud-PG/mesos-cluster.git
 # cd mesos-cluster/heat-templates-v2
 # vim env_heat
 # heat stack-create -f mesoscluster-cms.yaml  -e env_heat CLUSTER_NAME
