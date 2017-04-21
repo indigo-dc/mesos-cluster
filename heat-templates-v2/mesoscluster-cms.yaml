@@ -59,6 +59,12 @@ parameters:
   iam_token:
     type: string
 
+  iam_client_id:
+    type: string
+
+  iam_client_secret:
+    type: string
+
   cms_local_site: 
     type: string
 
@@ -77,11 +83,11 @@ parameters:
 
   cms_wn_image:
     type: string
-    default: "spiga/cmswndemo_v2"
+    default: "ciangom/cmswnitb"
 
   cms_proxycache_image:
     type: string
-    default: "spiga/ttsinterface_v1"
+    default: "ciangom/ttsinterface"
 
 resources:
   ######################################################################
@@ -246,6 +252,8 @@ resources:
         - name: cms_config_wn_image
         - name: cms_config_proxycache_image
         - name: cms_config_iamtoken
+        - name: cms_config_iam_client_id
+        - name: cms_config_iam_client_secret
       config: |
               ---
               - hosts: localhost
@@ -301,6 +309,8 @@ resources:
         cms_config_wn_image: {get_param: cms_wn_image}
         cms_config_proxycache_image: {get_param: cms_proxycache_image}
         cms_config_iamtoken: { get_param: iam_token }
+        cms_config_iam_client_id: { get_param: iam_client_id }
+        cms_config_iam_client_secret: { get_param: iam_client_secret }
 
   mesos_masters:
     type: OS::Heat::ResourceGroup
