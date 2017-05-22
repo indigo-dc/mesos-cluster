@@ -74,6 +74,12 @@ parameters:
   cms_stageoutserver: 
     type: string
 
+  cms_stageoutsite_bkp: 
+    type: string
+
+  cms_stageoutserver_bkp: 
+    type: string
+
   cms_stageoutprefix: 
     type: string
 
@@ -246,7 +252,9 @@ resources:
         - name: cms_config_proxycache_host
         - name: cms_config_cms_local_site
         - name: cms_config_stageoutsite
+        - name: cms_config_stageoutsite_bkp
         - name: cms_config_stageoutserver
+        - name: cms_config_stageoutserver_bkp
         - name: cms_config_stageoutprefix
         - name: cms_config_squid_image
         - name: cms_config_wn_image
@@ -304,6 +312,8 @@ resources:
         cms_config_cms_local_site: {get_param: cms_local_site}
         cms_config_stageoutsite: {get_param: cms_stageoutsite}
         cms_config_stageoutserver: {get_param: cms_stageoutserver}
+        cms_config_stageoutsite_bkp: {get_param: cms_stageoutsite_bkp}
+        cms_config_stageoutserver_bkp: {get_param: cms_stageoutserver_bkp}
         cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
         cms_config_squid_image: {get_param: cms_squid_image}
         cms_config_wn_image: {get_param: cms_wn_image}
@@ -356,6 +366,8 @@ resources:
         - name: cms_config_cms_local_site
         - name: cms_config_stageoutsite
         - name: cms_config_stageoutserver
+        - name: cms_config_stageoutsite_bkp
+        - name: cms_config_stageoutserver_bkp
         - name: cms_config_stageoutprefix
 
       config: |
@@ -388,6 +400,8 @@ resources:
         cms_config_cms_local_site: {get_param: cms_local_site}
         cms_config_stageoutsite: {get_param: cms_stageoutsite}
         cms_config_stageoutserver: {get_param: cms_stageoutserver}
+        cms_config_stageoutsite_bkp: {get_param: cms_stageoutsite_bkp}
+        cms_config_stageoutserver_bkp: {get_param: cms_stageoutserver_bkp}
         cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
 
 
@@ -442,4 +456,5 @@ outputs:
           params:
             host: { get_attr: [ mesos_masters, resource.0, mesos_server_ip ] }
           template: "https://host:4443"
+
 
