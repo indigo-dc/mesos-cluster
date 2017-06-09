@@ -74,14 +74,26 @@ parameters:
   cms_stageoutserver: 
     type: string
 
-  cms_stageoutsite_bkp: 
-    type: string
-
-  cms_stageoutserver_bkp: 
-    type: string
-
   cms_stageoutprefix: 
     type: string
+
+  monitor_ip:
+    type: string
+
+  elasticsearch_secret:
+    type: string
+
+  cms_stageoutsite_fallback: 
+    type: string
+    default: "PIPPO"
+
+  cms_stageoutserver_fallback: 
+    type: string
+    default: "PLUTO"
+
+  cms_stageoutprefix_fallback: 
+    type: string
+    default: "PAPERINO"
 
   cms_squid_image:
     type: string
@@ -252,10 +264,11 @@ resources:
         - name: cms_config_proxycache_host
         - name: cms_config_cms_local_site
         - name: cms_config_stageoutsite
-        - name: cms_config_stageoutsite_bkp
         - name: cms_config_stageoutserver
-        - name: cms_config_stageoutserver_bkp
         - name: cms_config_stageoutprefix
+        - name: cms_config_stageoutsite_fallback
+        - name: cms_config_stageoutserver_fallback
+        - name: cms_config_stageoutprefix_fallback
         - name: cms_config_squid_image
         - name: cms_config_wn_image
         - name: cms_config_proxycache_image
@@ -310,11 +323,14 @@ resources:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
         cms_config_cms_local_site: {get_param: cms_local_site}
+        monitordb_ip: {get_param: monitor_ip}
+        cms_config_elastic_secret: {get_param: elasticsearch_secret}
         cms_config_stageoutsite: {get_param: cms_stageoutsite}
         cms_config_stageoutserver: {get_param: cms_stageoutserver}
-        cms_config_stageoutsite_bkp: {get_param: cms_stageoutsite_bkp}
-        cms_config_stageoutserver_bkp: {get_param: cms_stageoutserver_bkp}
         cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
+        cms_config_stageoutsite_fallback: {get_param: cms_stageoutsite_fallback}
+        cms_config_stageoutserver_fallback: {get_param: cms_stageoutserver_fallback}
+        cms_config_stageoutprefix_fallback: {get_param: cms_stageoutprefix_fallback}
         cms_config_squid_image: {get_param: cms_squid_image}
         cms_config_wn_image: {get_param: cms_wn_image}
         cms_config_proxycache_image: {get_param: cms_proxycache_image}
@@ -364,11 +380,14 @@ resources:
         - name: cms_config_mysquid_host
         - name: cms_config_proxycache_host
         - name: cms_config_cms_local_site
+        - name: monitordb_ip
+        - name: cms_config_elastic_secret
         - name: cms_config_stageoutsite
         - name: cms_config_stageoutserver
-        - name: cms_config_stageoutsite_bkp
-        - name: cms_config_stageoutserver_bkp
         - name: cms_config_stageoutprefix
+        - name: cms_config_stageoutsite_fallback
+        - name: cms_config_stageoutserver_fallback
+        - name: cms_config_stageoutprefix_fallback
 
       config: |
               ---
@@ -398,11 +417,14 @@ resources:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
         cms_config_cms_local_site: {get_param: cms_local_site}
+        monitordb_ip: {get_param: monitor_ip}
+        cms_config_elastic_secret: {get_param: elasticsearch_secret}
         cms_config_stageoutsite: {get_param: cms_stageoutsite}
         cms_config_stageoutserver: {get_param: cms_stageoutserver}
-        cms_config_stageoutsite_bkp: {get_param: cms_stageoutsite_bkp}
-        cms_config_stageoutserver_bkp: {get_param: cms_stageoutserver_bkp}
         cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
+        cms_config_stageoutsite_fallback: {get_param: cms_stageoutsite_fallback}
+        cms_config_stageoutserver_fallback: {get_param: cms_stageoutserver_fallback}
+        cms_config_stageoutprefix_fallback: {get_param: cms_stageoutprefix_fallback}
 
 
   mesos_slaves:
