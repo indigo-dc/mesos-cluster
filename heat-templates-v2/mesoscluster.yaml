@@ -133,7 +133,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
       input_values: 
-        role_list: "docker, consul, haproxy-consul, keepalived"
+        role_list: "consul,keepalived,marathon-lb"
 
   loadbalancer_config:
     type: OS::Heat::SoftwareConfig
@@ -146,6 +146,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -153,9 +155,8 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.haproxy-consul }
+                  - { role: indigo-dc.consul, consul_mode: "agent" }
+                  - { role: indigo-dc.marathon-lb }
                   - { role: indigo-dc.keepalived }
 
   loadbalancer_deployment:
@@ -169,6 +170,11 @@ resources:
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
         load_balancers_list: {get_attr: [loadbalancers, loadbalancer_ip]}
         keepalived_virtual_ip: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+        marathon_lb_auth_creds: 
+           list_join: 
+             - ':'
+             - - {get_param: marathon_username }
+               - {get_param: marathon_password }
   
 
   loadbalancers:
@@ -222,6 +228,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -229,8 +237,7 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "server" }
                   - { role: indigo-dc.zookeeper }
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
@@ -248,7 +255,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
       input_values:
-        role_list: "consul, zookeeper, mesos, marathon, chronos"
+        role_list: "consul,zookeeper,mesos,marathon,chronos"
 
   master_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -295,7 +302,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
       input_values:
-        role_list: "docker, consul, mesos"
+        role_list: "consul,mesos"
 
   slave_config:
     type: OS::Heat::SoftwareConfig
@@ -309,6 +316,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -316,8 +325,7 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                 - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0}
                  - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
 
 
