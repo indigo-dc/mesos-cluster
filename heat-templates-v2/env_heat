@@ -1,0 +1,18 @@
+parameters:
+ network: 
+ ssh_key_name: 
+ master_flavor: m1.small
+ loadbalancer_flavor: m1.medium
+ slave_flavor: m1.large
+ marathon_username: admin
+ marathon_password: marathon
+ number_of_slaves: 3
+ number_of_masters: 1
+ server_image: 
+ iam_token: 
+ iam_client_id: 
+ iam_client_secret: 
+ cms_local_site: "T3_IT_Opportunistic_test"
+ cms_stageoutsite: "T1_IT_CNAF_Disk"
+ cms_stageoutserver: "storm-fe-cms.cr.cnaf.infn.it"
+ cms_stageoutprefix: "srm://storm-fe-cms.cr.cnaf.infn.it:8444/srm/managerv2?SFN=/cmsdisk/"

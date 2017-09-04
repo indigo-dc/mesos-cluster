@@ -73,4 +73,3 @@ outputs:
 
   loadbalancer_id:
     value: {get_resource: loadbalancer}
-
