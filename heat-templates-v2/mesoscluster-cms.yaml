@@ -68,6 +68,14 @@ parameters:
   cms_local_site: 
     type: string
 
+  cms_input_path:
+    type: string
+    default: "DUMMY"
+
+  cms_input_protocol:
+    type: string
+    default: "xrootd"
+
   cms_stageoutsite: 
     type: string
 
@@ -302,6 +310,8 @@ resources:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
         cms_config_cms_local_site: {get_param: cms_local_site}
+        cms_input_path: {get_param: cms_input_path}
+        cms_input_protocol: {get_param: cms_input_protocol}
         cms_config_stageoutsite: {get_param: cms_stageoutsite}
         cms_config_stageoutserver: {get_param: cms_stageoutserver}
         cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
@@ -386,6 +396,8 @@ resources:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
         cms_config_cms_local_site: {get_param: cms_local_site}
+        cms_input_path: {get_param: cms_input_path}
+        cms_input_protocol: {get_param: cms_input_protocol}
         cms_config_stageoutsite: {get_param: cms_stageoutsite}
         cms_config_stageoutserver: {get_param: cms_stageoutserver}
         cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
