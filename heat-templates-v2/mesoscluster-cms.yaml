@@ -77,6 +77,21 @@ parameters:
   cms_stageoutprefix: 
     type: string
 
+  monitor_ip:
+    type: string
+
+  elasticsearch_secret:
+    type: string
+
+  cms_stageoutsite_fallback: 
+    type: string
+
+  cms_stageoutserver_fallback: 
+    type: string
+
+  cms_stageoutprefix_fallback: 
+    type: string
+
   cms_squid_image:
     type: string
     default: "spiga/frontiersquidv1"
@@ -88,6 +103,19 @@ parameters:
   cms_proxycache_image:
     type: string
     default: "ciangom/ttsinterface"
+
+  cms_input_path:
+    type: string
+    
+  cms_input_protocol:
+    type: string
+
+  onedata_cache:
+    type: string
+
+  onedata_token:
+    type: string
+
 
 resources:
   ######################################################################
@@ -158,7 +186,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
       input_values: 
-        role_list: "docker, consul, haproxy-consul, keepalived"
+        role_list: "consul,keepalived,marathon-lb"
 
   loadbalancer_config:
     type: OS::Heat::SoftwareConfig
@@ -171,6 +199,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -178,15 +208,15 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.haproxy-consul }
+                  - { role: indigo-dc.consul, consul_mode: "agent" }
+                  - { role: indigo-dc.marathon-lb }
                   - { role: indigo-dc.keepalived }
 
   loadbalancer_deployment:
     type: OS::Heat::SoftwareDeployments
     depends_on:
       - loadbalancer_setup_deployment
+      - master_deployment
     properties:
       config: {get_resource: loadbalancer_config}
       servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
@@ -194,6 +224,11 @@ resources:
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
         load_balancers_list: {get_attr: [loadbalancers, loadbalancer_ip]}
         keepalived_virtual_ip: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+        marathon_lb_auth_creds: 
+           list_join: 
+             - ':'
+             - - {get_param: marathon_username }
+               - {get_param: marathon_password }
   
 
   loadbalancers:
@@ -201,7 +236,7 @@ resources:
     properties:
       count: 2
       resource_def:
-        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/loadbalancer.yaml
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-cluster/devel/heat-templates-v2/loadbalancer.yaml
         properties:
           server_name: lb%index%
           ssh_key_name: {get_param: ssh_key_name}
@@ -223,7 +258,7 @@ resources:
       inputs:
       - name: role_list
         type: CommaDelimitedList 
-      config: { get_file: 'https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/setup.sh' }
+      config: { get_file: 'https://raw.githubusercontent.com/indigo-dc/mesos-cluster/devel/heat-templates-v2/setup.sh' }
 
    
   ######################################################################
@@ -242,21 +277,12 @@ resources:
         - name: zookeeper_peers
         - name: marathon_username
         - name: marathon_password
-        - name: cms_config_mysquid_host
-        - name: cms_config_proxycache_host
-        - name: cms_config_cms_local_site
-        - name: cms_config_stageoutsite
-        - name: cms_config_stageoutserver
-        - name: cms_config_stageoutprefix
-        - name: cms_config_squid_image
-        - name: cms_config_wn_image
-        - name: cms_config_proxycache_image
-        - name: cms_config_iamtoken
-        - name: cms_config_iam_client_id
-        - name: cms_config_iam_client_secret
+        - name: enable_chronos
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -264,12 +290,10 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "server" }
                   - { role: indigo-dc.zookeeper }
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
-                  - { role: indigo-dc.cms_config }
 
 
 
@@ -283,7 +307,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
       input_values:
-        role_list: "consul, zookeeper, mesos, marathon, cms_config"
+        role_list: "consul,zookeeper,mesos,marathon"
 
   master_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -294,30 +318,19 @@ resources:
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}
       input_values:
         mesos_masters_list: {get_attr: [mesos_masters, mesos_server_ip]}
+        enable_chronos: false
         consul_servers: "{{mesos_masters_list}}"
         zookeeper_host_list: "{{mesos_masters_list}}"
         zookeeper_peers: "{{mesos_masters_list}}"
         marathon_username: {get_param: marathon_username}
         marathon_password: {get_param: marathon_password}
-        cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
-        cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
-        cms_config_cms_local_site: {get_param: cms_local_site}
-        cms_config_stageoutsite: {get_param: cms_stageoutsite}
-        cms_config_stageoutserver: {get_param: cms_stageoutserver}
-        cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
-        cms_config_squid_image: {get_param: cms_squid_image}
-        cms_config_wn_image: {get_param: cms_wn_image}
-        cms_config_proxycache_image: {get_param: cms_proxycache_image}
-        cms_config_iamtoken: { get_param: iam_token }
-        cms_config_iam_client_id: { get_param: iam_client_id }
-        cms_config_iam_client_secret: { get_param: iam_client_secret }
 
   mesos_masters:
     type: OS::Heat::ResourceGroup
     properties:
       count: {get_param: number_of_masters}
       resource_def:
-         type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
+         type: https://raw.githubusercontent.com/indigo-dc/mesos-cluster/devel/heat-templates-v2/mesosnode.yaml
          properties: 
             server_name: mesos-m%index%
             ssh_key_name: {get_param: ssh_key_name}
@@ -340,7 +353,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
       input_values:
-        role_list: "docker, consul, mesos, cms_config"
+        role_list: "consul,mesos,indigo-dc.cms_config"
 
   slave_config:
     type: OS::Heat::SoftwareConfig
@@ -351,16 +364,11 @@ resources:
           type: CommaDelimitedList
         - name: consul_servers
           type: CommaDelimitedList
-        - name: cms_config_mysquid_host
-        - name: cms_config_proxycache_host
-        - name: cms_config_cms_local_site
-        - name: cms_config_stageoutsite
-        - name: cms_config_stageoutserver
-        - name: cms_config_stageoutprefix
-
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -368,10 +376,9 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                 - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0}
                  - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
-                 - { role: indigo-dc.cms_config, cms_config_node: "wn" }
+
 
   slave_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -383,12 +390,108 @@ resources:
       input_values:
         zookeeper_peers: {get_attr: [mesos_masters, mesos_server_ip]}
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
+
+
+  cms_wn_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+        - name: cms_config_mysquid_host
+        - name: cms_config_proxycache_host
+        - name: cms_config_cms_local_site
+        - name: monitordb_ip
+        - name: cms_config_elastic_secret
+        - name: cms_config_stageoutsite
+        - name: cms_config_stageoutserver
+        - name: cms_config_stageoutprefix
+        - name: cms_config_stageoutsite_fallback
+        - name: cms_config_stageoutserver_fallback
+        - name: cms_config_stageoutprefix_fallback
+        - name: cms_input_path
+        - name: cms_input_protocol
+      config: |
+              ---
+              - hosts: localhost
+                vars:
+                connection: local
+                roles:
+                 - { role: indigo-dc.cms_config, cms_config_node: "wn" }
+
+
+  cms_wn_deployment:
+    type: OS::Heat::SoftwareDeployments
+    depends_on:
+      - slave_deployment
+    properties:
+      config: {get_resource: cms_wn_config}
+      servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
+      input_values:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
-        cms_config_cms_local_site: {get_param: cms_local_site}
-        cms_config_stageoutsite: {get_param: cms_stageoutsite}
-        cms_config_stageoutserver: {get_param: cms_stageoutserver}
-        cms_config_stageoutprefix: {get_param: cms_stageoutprefix}
+        cms_config_cms_local_site: { get_param: cms_local_site }
+        monitordb_ip: { get_param: monitor_ip }
+        cms_config_elastic_secret: { get_param: elasticsearch_secret}
+        cms_config_stageoutsite: { get_param: cms_stageoutsite }
+        cms_config_stageoutserver: { get_param: cms_stageoutserver }
+        cms_config_stageoutprefix: { get_param: cms_stageoutprefix }
+        cms_config_stageoutsite_fallback: { get_param: cms_stageoutsite_fallback }
+        cms_config_stageoutserver_fallback: { get_param: cms_stageoutserver_fallback }
+        cms_config_stageoutprefix_fallback: { get_param: cms_stageoutprefix_fallback }
+        cms_input_path: { get_param: cms_input_path }
+        cms_input_protocol: { get_param: cms_input_protocol }
+
+
+  cms_services_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+
+        - name: cms_config_mysquid_host
+        - name: cms_config_proxycache_host
+        - name: cms_config_iamtoken
+        - name: cms_config_iam_client_id
+        - name: cms_config_iam_client_secret
+        - name: cms_config_cms_local_site
+        - name: cms_config_squid_image
+        - name: cms_config_wn_image
+        - name: cms_config_proxycache_image
+        - name: cms_config_onedatacache
+        - name: cms_config_onedatatoken
+        - name: marathon_username
+        - name: marathon_password
+      config: |
+              ---
+              - hosts: localhost
+                vars:
+                connection: local
+                roles:
+                 - { role: indigo-dc.cms_config }
+
+  cms_services_deployment:
+    type: OS::Heat::SoftwareDeployment
+    depends_on:
+      - master_deployment
+      - cms_wn_deployment
+    properties:
+      config: {get_resource: cms_services_config}
+      servers: {get_attr: [mesos_masters, attributes, mesos_server_id, 0]}
+      input_values:
+        cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+        cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
+        cms_config_cms_local_site: { get_param: cms_local_site }
+        cms_config_squid_image: {get_param: cms_squid_image}
+        cms_config_wn_image: {get_param: cms_wn_image}
+        cms_config_proxycache_image: {get_param: cms_proxycache_image}
+        cms_config_iamtoken: { get_param: iam_token }
+        cms_config_iam_client_id: { get_param: iam_client_id }
+        cms_config_iam_client_secret: { get_param: iam_client_secret }
+        cms_config_proxycache_image: { get_param: cms_proxycache_image  } 
+        cms_config_onedatacache: { get_param: onedata_cache  } 
+        cms_config_onedatatoken: { get_param: onedata_token } 
+        marathon_username: { get_param: marathon_username  } 
+        marathon_password: { get_param: marathon_password  } 
 
 
   mesos_slaves:
@@ -396,7 +499,7 @@ resources:
     properties:
       count: {get_param: number_of_slaves}
       resource_def:
-        type: https://raw.githubusercontent.com/indigo-dc/mesos-deploy/devel/heat-templates-v2/mesosnode.yaml
+        type: https://raw.githubusercontent.com/indigo-dc/mesos-cluster/devel/heat-templates-v2/mesosnode.yaml
         properties:
           server_name: mesos-s%index%
           ssh_key_name: {get_param: ssh_key_name}
