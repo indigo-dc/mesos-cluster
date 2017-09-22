@@ -476,7 +476,7 @@ resources:
       - cms_wn_deployment
     properties:
       config: {get_resource: cms_services_config}
-      servers: {get_attr: [mesos_masters, attributes, mesos_server_id, 0]}
+      server: {get_attr: [mesos_masters, attributes, mesos_server_id, 0]}
       input_values:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
