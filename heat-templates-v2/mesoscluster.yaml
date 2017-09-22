@@ -48,6 +48,15 @@ parameters:
     default: m1.small
     description: flavor to use when booting the loadbalancer server
 
+  mesos_username:
+    type: string
+    description: username to access mesos HTTP endpoints
+    default: 'admin'
+
+  mesos_password:
+    type: string
+    description: password to access mesos HTTP endpoints
+
   marathon_username:
     type: string
     description: username to access Marathon endpoint
@@ -221,6 +230,8 @@ resources:
         - name: consul_servers
         - name: zookeeper_host_list
         - name: zookeeper_peers
+        - name: mesos_username
+        - name: mesos_password
         - name: marathon_username
         - name: marathon_password
         - name: chronos_username
@@ -269,6 +280,8 @@ resources:
         consul_servers: "{{mesos_masters_list}}"
         zookeeper_host_list: "{{mesos_masters_list}}"
         zookeeper_peers: "{{mesos_masters_list}}"
+        mesos_username: {get_param: mesos_username}
+        mesos_password: {get_param: mesos_password}
         marathon_username: {get_param: marathon_username}
         marathon_password: {get_param: marathon_password}
         chronos_username: {get_param: chronos_username}
