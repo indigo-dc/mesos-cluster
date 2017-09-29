@@ -16,11 +16,21 @@ sed -i 's:#remote_tmp:remote_tmp:' /etc/ansible/ansible.cfg
 echo $role_list
 IFS=','
 for role in $role_list; do 
-  if [ "$role" == "mesos-rexray" ]; then
-     git clone https://github.com/indigo-dc/ansible-role-mesos.git -b enable_dvdi_mod /etc/ansible/roles/indigo-dc.mesos
-  else
      ansible-galaxy install indigo-dc.$role;
-  fi
 done
+
+##########################################
+## NOTE: you can test a feature branch for 
+## ansible roles using git clone instead
+## of ansible-galaxy as follows:
+##########################################
+#
+# for role in $role_list; do
+#   if [ "$role" == "mesos" ]; then
+#     git clone https://github.com/indigo-dc/ansible-role-mesos.git -b enable_dvdi_mod /etc/ansible/roles/indigo-dc.mesos
+#   else
+#     ansible-galaxy install indigo-dc.$role;
+#   fi
+# done
 
  
