@@ -48,6 +48,15 @@ parameters:
     default: m1.small
     description: flavor to use when booting the loadbalancer server
 
+  mesos_username:
+    type: string
+    description: username to access mesos HTTP endpoints
+    default: 'admin'
+
+  mesos_password:
+    type: string
+    description: password to access mesos HTTP endpoints
+
   marathon_username:
     type: string
     description: username to access Marathon endpoint
@@ -76,8 +85,9 @@ parameters:
   rexray_os_tenantname:
     type: string
 
-  rexray_os_regionname: 
+  rexray_os_regionname:
     type: string
+
 
 resources:
   ######################################################################
@@ -148,7 +158,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [loadbalancers, attributes, loadbalancer_id]}
       input_values: 
-        role_list: "docker, consul, haproxy-consul, keepalived"
+        role_list: "consul,keepalived,marathon-lb"
 
   loadbalancer_config:
     type: OS::Heat::SoftwareConfig
@@ -161,6 +171,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -168,9 +180,8 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "agent", docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.haproxy-consul }
+                  - { role: indigo-dc.consul, consul_mode: "agent" }
+                  - { role: indigo-dc.marathon-lb }
                   - { role: indigo-dc.keepalived }
 
   loadbalancer_deployment:
@@ -184,6 +195,11 @@ resources:
         consul_servers: {get_attr: [mesos_masters, mesos_server_ip]}
         load_balancers_list: {get_attr: [loadbalancers, loadbalancer_ip]}
         keepalived_virtual_ip: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
+        marathon_lb_auth_creds: 
+           list_join: 
+             - ':'
+             - - {get_param: marathon_username }
+               - {get_param: marathon_password }
   
 
   loadbalancers:
@@ -230,6 +246,8 @@ resources:
         - name: consul_servers
         - name: zookeeper_host_list
         - name: zookeeper_peers
+        - name: mesos_username
+        - name: mesos_password
         - name: marathon_username
         - name: marathon_password
         - name: chronos_username
@@ -237,6 +255,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -244,8 +264,7 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                  - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                  - { role: indigo-dc.consul, consul_mode: "server", docker_bridge_ip: "172.0.17.1" }
+                  - { role: indigo-dc.consul, consul_mode: "server" }
                   - { role: indigo-dc.zookeeper }
                   - { role: indigo-dc.mesos, mesos_install_mode: "master" }
                   - { role: indigo-dc.marathon }
@@ -263,7 +282,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_masters, attributes, mesos_server_id]}  
       input_values:
-        role_list: "consul, zookeeper, mesos, marathon, chronos"
+        role_list: "consul,zookeeper,mesos,marathon,chronos"
 
   master_deployment:
     type: OS::Heat::SoftwareDeployments
@@ -277,6 +296,8 @@ resources:
         consul_servers: "{{mesos_masters_list}}"
         zookeeper_host_list: "{{mesos_masters_list}}"
         zookeeper_peers: "{{mesos_masters_list}}"
+        mesos_username: {get_param: mesos_username}
+        mesos_password: {get_param: mesos_password}
         marathon_username: {get_param: marathon_username}
         marathon_password: {get_param: marathon_password}
         chronos_username: {get_param: chronos_username}
@@ -310,7 +331,7 @@ resources:
       config: {get_resource: ansible_setup_config}
       servers: {get_attr: [mesos_slaves, attributes, mesos_server_id]}
       input_values:
-        role_list: "docker, consul, mesos-rexray"
+        role_list: "consul,mesos"
 
   slave_config:
     type: OS::Heat::SoftwareConfig
@@ -329,6 +350,8 @@ resources:
       config: |
               ---
               - hosts: localhost
+                vars:
+                  docker_bridge_ip: "172.0.17.1"
                 connection: local
                 pre_tasks:
                   - name: Fix /etc/hosts
@@ -336,8 +359,7 @@ resources:
                   - name: Update /etc/hosts
                     lineinfile:  dest=/etc/hosts  line="{{ ansible_default_ipv4.address }}\t{{ansible_fqdn}} {{ ansible_hostname }}"
                 roles:
-                 - { role: indigo-dc.docker, docker_bridge_ip: "172.0.17.1" }
-                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0, docker_bridge_ip: "172.0.17.1" }
+                 - { role: indigo-dc.consul, consul_mode: "agent", consul_bootstrap: 0}
                  - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
 
 
