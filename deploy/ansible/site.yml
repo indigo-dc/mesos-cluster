@@ -1,0 +1,33 @@
+---
+- hosts: all
+  tasks:
+    - name: set hostname to local ipv4 address
+      lineinfile:
+        dest: /etc/hosts
+        line: "{{ ansible_eth0.ipv4.address }} {{ ansible_hostname }}"
+
+- hosts: mesos_masters
+  vars: 
+     docker_bridge_ip: "172.0.17.1"
+  roles:
+     - { role: indigo-dc.consul, consul_mode: "server"  }
+     - { role: indigo-dc.zookeeper }
+     - { role: indigo-dc.mesos, mesos_install_mode: "master"}
+     - { role: indigo-dc.marathon, marathon_password: "password" }
+     - { role: indigo-dc.chronos, chronos_password: "password" }
+
+- hosts: mesos_slaves
+  vars:
+    docker_bridge_ip: "172.0.17.1"
+  roles:
+    - { role: indigo-dc.consul, consul_mode: "agent"  }
+    - { role: indigo-dc.mesos, mesos_install_mode: "slave" }
+
+- hosts: load_balancers
+  vars:
+    docker_bridge_ip: "172.0.17.1"
+  roles:
+    - { role: indigo-dc.consul, consul_mode: "agent" }
+    - { role: indigo-dc.haproxy-consul }
+    - { role: indigo-dc.keepalived, keepalived_virtual_ip: "172.30.6.134" }
+
