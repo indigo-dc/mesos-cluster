@@ -37,6 +37,16 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 - Cluster elasticity through [EC3/CLUES](https://github.com/indigo-dc/clues-indigo) plugin
 - Zabbix monitoring [probes](https://github.com/indigo-dc/Monitoring) for Mesos, Marathon and Chronos;
 
+### INDIGO use-cases
+The INDIGO components developed for Mesos (ansible roles, docker images, tosca custom-types and templates) have been used to support different uses-cases:
+
+- *Lifewatch-Algaebloom* for water quality modeling and analysis: 
+  - [this TOSCA template](https://github.com/indigo-dc/tosca-templates/blob/master/lifewatch-algaebloom.yaml) can be used to run processing jobs on a Mesos cluster through the Chronos framework; 
+- *Compact Muon Solenoid* (CMS) analysis cluster on-demand:
+  - [this TOSCA template](https://github.com/indigo-dc/tosca-templates/blob/master/mesos_cluster_cms.yaml) can be used to deploy a complete cluster for the execution of HTCondor workload management system;
+- *Dariah Zenodo-based* repository in the cloud using Marathon:
+  - [this TOSCA template](https://github.com/indigo-dc/tosca-templates/blob/master/dariah_repository.yaml) can be used to deploy the DARIAH Zenodo-based repository in the cloud: all the services are run as Marathon apps.   
+
 
 ## Components
 
@@ -74,7 +84,7 @@ The following roles are available in Ansible Galaxy:
 - indigo-dc.chronos:
   - source: https://github.com/indigo-dc/ansible-role-chronos
 - indigo-dc.marathon:
-  -source: https://github.com/indigo-dc/ansible-role-marathon
+  - source: https://github.com/indigo-dc/ansible-role-marathon
 - indigo-dc.marathon-lb:
   - source: https://github.com/indigo-dc/ansible-role-marathon-lb
 - indigo-dc.keepalived:
