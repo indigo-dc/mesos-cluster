@@ -33,7 +33,7 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 - [Ansible roles](#ansible-roles) and [TOSCA templates](https://github.com/indigo-dc/tosca-templates/blob/master/mesos_cluster.yaml) for cluster set-up featuring high-availability, service-discovery and load-balancing; 
 - Integration with the INDIGO [Orchestrator](https://www.gitbook.com/book/indigo-dc/orchestrator/details) 
   - Job submission and service deployment requests are described through TOSCA templates
-- Definition of custom TOSCA [types](https://github.com/indigo-dc/tosca-types/blob/master/custom_types.yaml#L506) for describing Chronos jobs and Marathon application  
+- Definition of custom TOSCA [types](https://github.com/indigo-dc/tosca-types/blob/master/custom_types.yaml) for describing Chronos jobs and Marathon application  
 - Cluster elasticity through [EC3/CLUES](https://github.com/indigo-dc/clues-indigo) plugin
 - Zabbix monitoring [probes](https://github.com/indigo-dc/Monitoring) for Mesos, Marathon and Chronos;
 
@@ -42,14 +42,12 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 
 The core components are:
 
-- [Consul](http://consul.io) for service discovery
 - [Mesos](http://mesos.apache.org) cluster manager for efficient resource isolation and sharing across distributed services
 - [Chronos](https://mesos.github.io/chronos/) a distributed task scheduler
 - [Marathon](https://mesosphere.github.io/marathon) for cluster management of long running containerized services
+- [Consul](http://consul.io) for service discovery
 - [Docker](http://docker.io) container runtime
-- [mesos-consul](https://github.com/CiscoCloud/mesos-consul) populating Consul service discovery with Mesos tasks
-- [marathon-consul](https://github.com/CiscoCloud/marathon-consul) bridging Marathon information to Consul KV
-- [haproxy-consul](https://github.com/CiscoCloud/haproxy-consul) for dynamic haproxy configuration using Consul
+- [marathon-lb](https://github.com/mesosphere/marathon-lb) for managing HAProxy, by consuming Marathon's app state
 
 These components are distributed on the cluster nodes as shown in the diagram below.
 
@@ -60,8 +58,7 @@ These components are distributed on the cluster nodes as shown in the diagram be
 - **Slave nodes**
   - On every slave node the following (dockerized) components run: mesos slave, consul agent
 - **Load-balancers**
-  - On the two load-balancers the following (dockerized) components run: keepalived and haproxy-consul. keepalived ensures the high-availability of the load-balancer managing the cluster Virtual IP.
-
+  - On the two load-balancers the following (dockerized) components run: keepalived and marathon-lb. keepalived ensures the high-availability of the load-balancer managing the cluster Virtual IP.
 
 
 ## Ansible roles
@@ -78,8 +75,8 @@ The following roles are available in Ansible Galaxy:
   - source: https://github.com/indigo-dc/ansible-role-chronos
 - indigo-dc.marathon:
   -source: https://github.com/indigo-dc/ansible-role-marathon
-- indigo-dc.haproxy-consul:
-  - source: https://github.com/indigo-dc/ansible-role-haproxy-consul
+- indigo-dc.marathon-lb:
+  - source: https://github.com/indigo-dc/ansible-role-marathon-lb
 - indigo-dc.keepalived:
   - source: https://github.com/indigo-dc/ansible-role-keepalived
 
