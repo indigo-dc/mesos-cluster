@@ -1,24 +1,25 @@
-{"parameters":{
- "network": "",
- "ssh_key_name": "",
- "master_flavor": "",
- "loadbalancer_flavor": "",
- "slave_flavor": "",
- "marathon_username": "",
- "marathon_password": "",
- "number_of_slaves": 4,
- "number_of_masters": 1,
- "server_image": "",
- "cms_wn_image": "spiga/cmswn",
- "cms_proxycache_image": "spiga/ttscache",
- "iam_token": "",
- "iam_client_id": "",
- "iam_client_secret": "",
- "cms_local_site": "",
- "cms_stageoutsite": "",
- "cms_stageoutserver": "",
- "cms_stageoutprefix": "",
- "monitor_ip": "",
- "elasticsearch_secret": ""
-}
+{
+    "parameters": {
+        "network": "",
+        "ssh_key_name": "",
+        "master_flavor": "",
+        "loadbalancer_flavor": "",
+        "slave_flavor": "",
+        "marathon_username": "",
+        "marathon_password": "",
+        "number_of_slaves": 4,
+        "number_of_masters": 1,
+        "server_image": "",
+        "cms_wn_image": "spiga/cmswn",
+        "cms_proxycache_image": "spiga/ttscache",
+        "iam_token": "",
+        "iam_client_id": "",
+        "iam_client_secret": "",
+        "cms_local_site": "",
+        "cms_stageoutsite": "",
+        "cms_stageoutserver": "",
+        "cms_stageoutprefix": "",
+        "monitor_ip": "",
+        "elasticsearch_secret": ""
+    }
 }
