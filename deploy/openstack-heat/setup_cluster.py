@@ -58,7 +58,8 @@ def purge_yaml(data):
             data[key] = value.isoformat()
         elif not any([isinstance(value, type_) for type_ in basic_types]):
             raise Exception(
-                "!!!Warning!!! '{}' not recognized. [{}]->[{}]".format(type(value), key, value)
+                "!!!Warning!!! '{}' not recognized. [{}]->[{}]".format(
+                    type(value), key, value)
             )
 
 
