@@ -1,53 +1,79 @@
 #! /usr/bin/python
 """
-Script to launch a cluster deployment in 
+Script to launch a cluster deployment in
 """
-from keystoneauth1 import loading
-from keystoneauth1 import session
-from heatclient import client
-from yaml import load, dump
-import json
-
+from __future__ import print_function
 import argparse
 import getpass
+import json
 
+import yaml
+from keystoneauth1 import loading, session
+
+from heatclient import client
+from datetime import date
+
+AUTH_URL = ""
+PROJECT_ID = ""
+
+assert AUTH_URL != "", "[Error]==> You have to set 'AUTH_URL' variable"
+assert PROJECT_ID != "", "[Error]==> You have to set 'PROJECT_ID' variable"
 
 try:
-    user=str(raw_input('Username:'))
+    USER = str(raw_input('Username:'))
+    print("|->: {}".format(USER))
 except ValueError:
-    print "Not a str"
+    print("Not a str")
 
-passwd = getpass.getpass('Password:')
-loader = loading.get_plugin_loader('password')
+PASSWD = getpass.getpass('Password:')
+LOADER = loading.get_plugin_loader('password')
 
-auth = loader.load_from_options(auth_url='CHANGE ME', 
-                                username=user, 
-                                password=passwd, 
-                                project_id='CHANGE ME',
-                                user_domain_name ='default')
+AUTH = LOADER.load_from_options(
+    auth_url=AUTH_URL,
+    username=USER,
+    password=PASSWD,
+    project_id=PROJECT_ID,
+    user_domain_name='default'
+)
 
-sess = session.Session(auth=auth)
-print("Token:",sess.get_token())
+SESS = session.Session(auth=AUTH)
+print("[Token]==>", SESS.get_token())
 try:
-    stk_name=str(raw_input('Stack name:'))
+    STK_NAME = str(raw_input('Stack name:'))
+    print("|->: {}".format(STK_NAME))
 except ValueError:
-    print "Not a str"
+    print("Not a str")
 
 
-heat = client.Client('1', session=sess)
+HEAT = client.Client('1', session=SESS)
 
-stream = file('mesoscluster-cms.yaml', 'r')
-data = load(stream)
-data = json.dumps(data,indent=4, sort_keys=True, default=str)
-data = json.loads(data)
 
-with open('env_heat.json') as data_file:    
-    env_ = json.load(data_file)
+def purge_yaml(data):
+    """Checks and converts data in basic types."""
+    basic_types = [int, float, str, unicode, list]
+    for key, value in data.items():
+        if isinstance(value, dict):
+            purge_yaml(value)
+        elif isinstance(value, date):
+            data[key] = value.isoformat()
+        elif not any([isinstance(value, type_) for type_ in basic_types]):
+            raise Exception(
+                "!!!Warning!!! '{}' not recognized. [{}]->[{}]".format(type(value), key, value)
+            )
+
+
+with file('mesoscluster-cms.yaml', 'r') as yaml_file:
+    DATA = yaml.safe_load(yaml_file)
+    purge_yaml(DATA)
+
+with open('env_heat.json') as data_file:
+    ENV = json.load(data_file)
 
 with open('setup.sh') as data_file:
-    setup = data_file.read()
+    SETUP = data_file.read()
 
-heat.stacks.create(stack_name=stk_name,
-		   template=data, 
-                   environment=env_,
-                   files={'https://raw.githubusercontent.com/indigo-dc/mesos-cluster/master/deploy/openstack-heat/setup.sh': setup})
+
+HEAT.stacks.create(stack_name=STK_NAME,
+                   template=DATA,
+                   environment=ENV,
+                   files={'https://raw.githubusercontent.com/indigo-dc/mesos-cluster/master/deploy/openstack-heat/setup.sh': SETUP})
