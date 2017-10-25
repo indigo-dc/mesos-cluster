@@ -15,6 +15,7 @@ from datetime import date
 
 AUTH_URL = ""
 PROJECT_ID = ""
+VERIFY_CA = False
 
 assert AUTH_URL != "", "[Error]==> You have to set 'AUTH_URL' variable"
 assert PROJECT_ID != "", "[Error]==> You have to set 'PROJECT_ID' variable"
@@ -36,7 +37,12 @@ AUTH = LOADER.load_from_options(
     user_domain_name='default'
 )
 
-SESS = session.Session(auth=AUTH)
+if VERIFY_CA:
+    SESS = session.Session(auth=AUTH,
+                           verify='ca.pem')
+else:
+    SESS = session.Session(auth=AUTH)
+
 print("[Token]==>", SESS.get_token())
 try:
     STK_NAME = str(raw_input('Stack name:'))
@@ -70,7 +76,7 @@ with file('mesoscluster-cms.yaml', 'r') as yaml_file:
 with open('env_heat.json') as data_file:
     ENV = json.load(data_file)
 
-with open('setup.sh') as data_file:
+with open('../setup.sh') as data_file:
     SETUP = data_file.read()
 
 
