@@ -68,19 +68,13 @@ def purge_yaml(data):
                     type(value), key, value)
             )
 
-
-with file('mesoscluster-cms.yaml', 'r') as yaml_file:
-    DATA = yaml.safe_load(yaml_file)
-    purge_yaml(DATA)
-
 with open('env_heat.json') as data_file:
     ENV = json.load(data_file)
 
 with open('../setup.sh') as data_file:
     SETUP = data_file.read()
 
-
 HEAT.stacks.create(stack_name=STK_NAME,
-                   template=DATA,
+                   template_url='https://raw.githubusercontent.com/indigo-dc/mesos-cluster/master/deploy/openstack-heat/dodas/mesoscluster-cms.yaml',
                    environment=ENV,
                    files={'https://raw.githubusercontent.com/indigo-dc/mesos-cluster/master/deploy/openstack-heat/setup.sh': SETUP})
