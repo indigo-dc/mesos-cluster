@@ -485,7 +485,7 @@ resources:
       # - cms_wn_deployment
     properties:
       config: {get_resource: cms_services_config}
-      server: { "Fn::Select" : [ '0',  get_attr: [mesos_masters, attributes, mesos_server_id] ] }
+      server: { get_attr: [mesos_masters, resource.0, mesos_server_id] }
       input_values:
         cms_config_mysquid_host: {get_attr: [vip_port, fixed_ips, 0, ip_address]}
         cms_config_proxycache_host: "{{cms_config_mysquid_host}}"
@@ -542,7 +542,7 @@ outputs:
       This is the mesos master id
 
   mesos_master_id_selected:
-    value: { "Fn::Select" : [ '0',  get_attr: [mesos_masters, attributes, mesos_server_id] ] }
+    value: { get_attr: [mesos_masters, resource.0, mesos_server_id] }
     description: >
       This is the mesos master id selected
 
