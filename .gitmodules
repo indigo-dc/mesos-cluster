@@ -1,0 +1,6 @@
+[submodule "scripts"]
+	path = scripts
+	url = https://github.com/Cloud-PG/scripts
+[submodule "ansible-role-mesos"]
+	path = ansible-role-mesos
+	url = https://github.com/indigo-dc/ansible-role-mesos
