@@ -1,0 +1,7 @@
+# Pipenv lock file
+Pipfile.lock
+
+# Possible user configuration files
+.access_token
+env_heat.json
+setup_config.json

@@ -105,7 +105,11 @@ parameters:
 
   cms_proxycache_image:
     type: string
-    default: "spiga/ttscache"
+    default: "cloudpg/ttscache"
+  
+  cms_proxycache_token_manager:
+    type: string
+    default: "ZOOKEEPER"
 
   cms_input_path:
     type: string
@@ -456,10 +460,9 @@ resources:
     properties:
       group: ansible
       inputs:
-
         - name: cms_config_mysquid_host
         - name: cms_config_proxycache_host
-        - name: cms_config_iamtoken
+        - name: cms_config_iam_token
         - name: cms_config_iam_client_id
         - name: cms_config_iam_client_secret
         - name: cms_config_cms_local_site
@@ -470,6 +473,8 @@ resources:
         - name: cms_config_onedatatoken
         - name: marathon_username
         - name: marathon_password
+        - name: zookeeper_host_list
+        - name: proxy_cache_manager
       config: |
               ---
               - hosts: localhost
@@ -493,14 +498,16 @@ resources:
         cms_config_squid_image: {get_param: cms_squid_image}
         cms_config_wn_image: {get_param: cms_wn_image}
         cms_config_proxycache_image: {get_param: cms_proxycache_image}
-        cms_config_iamtoken: { get_param: iam_token }
+        cms_config_iam_token: { get_param: iam_token }
         cms_config_iam_client_id: { get_param: iam_client_id }
         cms_config_iam_client_secret: { get_param: iam_client_secret }
         cms_config_proxycache_image: { get_param: cms_proxycache_image  } 
         cms_config_onedatacache: { get_param: onedata_cache  } 
         cms_config_onedatatoken: { get_param: onedata_token } 
         marathon_username: { get_param: marathon_username  } 
-        marathon_password: { get_param: marathon_password  } 
+        marathon_password: { get_param: marathon_password  }
+        zookeeper_host_list: { get_attr: [mesos_masters, mesos_server_ip] }
+        proxy_cache_manager: { get_param: cms_proxycache_token_manager }
 
 
   mesos_slaves:
@@ -525,6 +532,11 @@ outputs:
     value: {get_attr: [mesos_masters, mesos_server_ip]}
     description: >
       This is a list of the  addresses of all the Mesos masters.
+  
+  zookeeper_host_list:
+    value: {get_attr: [mesos_masters, mesos_server_ip]}
+    description: >
+      Zookeeper host list
 
   mesos_slaves_ips:
     value: {get_attr: [mesos_slaves, mesos_server_ip]}
@@ -537,14 +549,9 @@ outputs:
       This is the Load Balancers Virtual IP
   
   mesos_master_id:
-    value: {get_attr: [mesos_masters, mesos_server_id]}
+    value: {get_attr: [mesos_masters, resource.0, mesos_server_id]}
     description: >
       This is the mesos master id
-
-  mesos_master_id_selected:
-    value: { get_attr: [mesos_masters, resource.0, mesos_server_id] }
-    description: >
-      This is the mesos master id selected
 
   cluster_endpoints:
     description: Cluster endpoints

@@ -1,0 +1,19 @@
+{
+    "openstack_auth_url": "",
+    "openstack_project_id": "",
+    "openstack_user": "",
+    "heat_template": "mesoscluster-cms.yaml",
+    "heat_environment_variables": "env_heat.json",
+    "stack_name": "",
+    "indigo_iam": {
+        "client_id": "",
+        "client_secret": "",
+        "grant_type": "password",
+        "username": "",
+        "scope": "openid profile email offline_access",
+        "url": "https://iam-test.indigo-datacloud.eu/token"
+    },
+    "files": {
+        "https://raw.githubusercontent.com/indigo-dc/mesos-cluster/master/deploy/openstack-heat/setup.sh": "../setup.sh"
+    }
+}
