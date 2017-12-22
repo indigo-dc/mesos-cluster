@@ -15,22 +15,27 @@ sed -i 's:#remote_tmp:remote_tmp:' /etc/ansible/ansible.cfg
 # Install ansible roles
 echo $role_list
 IFS=','
+###########################################
+# NOTE: you can test a feature branch for #
+# ansible roles using git clone instead   #
+# of ansible-galaxy as follows:           #
+###########################################
 for role in $role_list; do 
      ansible-galaxy install indigo-dc.$role;
 done
 
-##########################################
-## NOTE: you can test a feature branch for 
-## ansible roles using git clone instead
-## of ansible-galaxy as follows:
-##########################################
+###########################################
+# NOTE: you can test a feature branch for #
+# ansible roles using git clone instead   #
+# of ansible-galaxy as follows:           #
+###########################################
 #
 # for role in $role_list; do
 #   if [ "$role" == "mesos" ]; then
 #     git clone https://github.com/indigo-dc/ansible-role-mesos.git -b enable_dvdi_mod /etc/ansible/roles/indigo-dc.mesos
+#   elif [ "$role" == "cms_config" ]; then
+#     git clone https://github.com/indigo-dc/ansible-role-cms_config.git -b new_proxy /etc/ansible/roles/indigo-dc.cms_config
 #   else
 #     ansible-galaxy install indigo-dc.$role;
 #   fi
 # done
-
- 

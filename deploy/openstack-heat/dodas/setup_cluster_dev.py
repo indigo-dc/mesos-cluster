@@ -16,6 +16,7 @@ from time import sleep
 import requests
 import yaml
 from keystoneauth1 import loading, session
+from keystoneauth1 import exceptions as keystone_exc
 
 from heatclient import client
 
@@ -171,9 +172,12 @@ def main():
         user_domain_name='default'
     )
 
-    SESS = session.Session(auth=AUTH)
-    print(bcolors.HEADER +
-          "[Token Openstack]==>" + bcolors.OKBLUE + SESS.get_token() + bcolors.ENDC)
+    try:
+        SESS = session.Session(auth=AUTH)
+        print(bcolors.HEADER + "[Token Openstack]==>" + bcolors.OKBLUE + SESS.get_token() + bcolors.ENDC)
+    except keystone_exc.http.Unauthorized:
+        print(bcolors.FAIL + "[ERROR]==> Login failed! You're not authorized..." + bcolors.ENDC)
+        exit(1)
 
     try:
         # STK_NAME = str(raw_input('Stack name:'))
