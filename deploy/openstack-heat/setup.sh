@@ -11,6 +11,7 @@ pip install ansible==2.2.1
 
 # workaround for https://github.com/ansible/ansible/issues/20332
 sed -i 's:#remote_tmp:remote_tmp:' /etc/ansible/ansible.cfg
+sed -i 's:#log_path:log_path:' /etc/ansible/ansible.cfg
 
 # Install ansible roles
 echo $role_list
