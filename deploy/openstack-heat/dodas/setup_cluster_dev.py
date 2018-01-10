@@ -369,6 +369,10 @@ def main():
             stdout.flush()
             idx = (idx + 1) % len(SPINNER)
             sleep(1)
+        
+        if cur_stack.stack_status == "DELETE_FAILED":
+            print(bcolors.FAIL + "[STACK NOT DELETED]==>" + bcolors.WARNING + cur_stack.stack_status_reason + bcolors.ENDC)
+            stdout.flush()
     # STATUS
     elif args.cmd == "status":
         cur_stack = get_stack(HEAT, STK_NAME)
