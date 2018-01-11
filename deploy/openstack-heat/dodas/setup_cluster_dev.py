@@ -19,6 +19,7 @@ from keystoneauth1 import loading, session
 from keystoneauth1 import exceptions as keystone_exc
 
 from heatclient import client
+from heatclient import exc as heatclient_exc
 
 
 class bcolors:
@@ -255,15 +256,18 @@ def main():
                 with open(file_path) as data:
                     files[openstack_filename] = data.read()
 
-            stack = HEAT.stacks.create(
-                stack_name=STK_NAME,
-                template=DATA,
-                environment=ENV,
-                files=files
-            )
-
-            print(bcolors.OKGREEN + "![STACK CREATED]!->" + bcolors.HEADER + stack[
-                  'stack']['id'] + bcolors.ENDC)
+            try:
+                stack = HEAT.stacks.create(
+                    stack_name=STK_NAME,
+                    template=DATA,
+                    environment=ENV,
+                    files=files
+                )
+            except heatclient_exc.HTTPConflict as err:
+                print(bcolors.FAIL + "![STACK ERROR]!->" + bcolors.WARNING + str(err) + bcolors.ENDC)
+            else:
+                print(bcolors.OKGREEN + "![STACK CREATED]!->" + bcolors.HEADER + stack[
+                    'stack']['id'] + bcolors.ENDC)
         # RUN DEBUG
         elif args.debug:
             # Check logs
