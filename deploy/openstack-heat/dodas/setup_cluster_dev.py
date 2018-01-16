@@ -277,7 +277,7 @@ def main():
                 # Get resources
                 resources = HEAT.resources.list(stack_id=cur_stack.id)
 
-                print(bcolors.HEADER + "=>[HEAT RESOURCES]" + bcolors.ENDC)
+                print(bcolors.HEADER + "=>[HEAT RESOURCES][{}]".format(args.resource_command) + bcolors.ENDC)
                 for resource in sorted(resources, key=lambda elm: elm.resource_type):
                     # print(dir(resource), json.dumps(resource._info,
                     # indent=2))
@@ -319,7 +319,7 @@ def main():
                 # Get softwares
                 softwares = list(HEAT.software_deployments.list())
 
-                print(bcolors.HEADER + "=>[HEAT SOFTWARES]" + bcolors.ENDC)
+                print(bcolors.HEADER + "=>[HEAT SOFTWARES][{}]".format(args.software_command) + bcolors.ENDC)
                 for software in softwares:
                     if args.software_command == "fails":
                         if software.status == "FAILED":
