@@ -20,6 +20,7 @@ from keystoneauth1 import exceptions as keystone_exc
 
 from heatclient import client
 from heatclient import exc as heatclient_exc
+from six import text_type
 
 
 class bcolors:
@@ -52,7 +53,7 @@ def get_stack(heat, stk_name, monitor=True):
 
 def purge_yaml(data):
         """Checks and converts data in basic types."""
-        basic_types = [int, float, str, unicode, list]
+        basic_types = [int, float, text_type, list]
         for key, value in data.items():
             if isinstance(value, dict):
                 purge_yaml(value)
@@ -194,7 +195,7 @@ def main():
 
     HEAT = client.Client('1', session=SESS)
 
-    with file(config.get('heat_template'), 'r') as yaml_file:
+    with open(config.get('heat_template'), 'r') as yaml_file:
         DATA = yaml.safe_load(yaml_file)
         purge_yaml(DATA)
 
@@ -233,7 +234,7 @@ def main():
                         access_token = json.loads(
                             res.content).get('access_token')
                         with open(".access_token", "w") as access_token_file:
-                            access_token_file.write(res.content)
+                            access_token_file.write(str(res.content))
                     else:
                         raise Exception(
                             "Error during access token request.\n==> Status code {}\n==>Content\n{}".format(res.status_code, res.content))
