@@ -38,3 +38,4 @@ for role in $role_list; do
      ansible-galaxy install indigo-dc.$role;
    fi
 done
+
