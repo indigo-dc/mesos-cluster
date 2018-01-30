@@ -127,6 +127,25 @@ parameters:
     type: string
     default: "DUMMY"
 
+  cms_xrd_cache_redir:
+    type: string
+    default: "0.0.0.0"
+
+  cms_cmsd_cache_redir_port:
+    type: string
+    default: "1213"
+
+  cms_xrd_cache_redir_port:
+    type: string
+    default: "1094"  
+
+  cms_redir_global:
+    type: string
+    default: "0.0.0.0"
+
+  cms_redir_global_port:
+    type: string
+    default: "1213"
 
 resources:
   ######################################################################
@@ -475,6 +494,12 @@ resources:
         - name: marathon_password
         - name: zookeeper_host_list
         - name: proxy_cache_manager
+        - name: cms_xrd_cache_redir
+        - name: cms_cmsd_cache_redir_port
+        - name: cms_xrd_cache_redir_port
+        - name: cms_redir_global
+        - name: cms_redir_global_port
+
       config: |
               ---
               - hosts: localhost
@@ -508,7 +533,11 @@ resources:
         marathon_password: { get_param: marathon_password  }
         zookeeper_host_list: { get_attr: [mesos_masters, mesos_server_ip] }
         proxy_cache_manager: { get_param: cms_proxycache_token_manager }
-
+        cms_xrd_cache_redir: { get_param: cms_xrd_cache_redir }
+        cms_cmsd_cache_redir_port: { get_param: cms_cmsd_cache_redir_port }
+        cms_xrd_cache_redir_port: { get_param: cms_xrd_cache_redir_port }
+        cms_redir_global: { get_param: cms_redir_global }
+        cms_redir_global_port: { get_param: cms_redir_global_port }
 
   mesos_slaves:
     type: OS::Heat::ResourceGroup
