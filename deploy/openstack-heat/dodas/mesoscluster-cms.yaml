@@ -527,8 +527,8 @@ resources:
         cms_config_iam_client_id: { get_param: iam_client_id }
         cms_config_iam_client_secret: { get_param: iam_client_secret }
         cms_config_proxycache_image: { get_param: cms_proxycache_image  } 
-        cms_config_onedatacache: { get_param: onedata_cache  } 
-        cms_config_onedatatoken: { get_param: onedata_token } 
+        oneprovider_name: { get_param: onedata_cache  } 
+        oneclient_token: { get_param: onedata_token } 
         marathon_username: { get_param: marathon_username  } 
         marathon_password: { get_param: marathon_password  }
         zookeeper_host_list: { get_attr: [mesos_masters, mesos_server_ip] }
