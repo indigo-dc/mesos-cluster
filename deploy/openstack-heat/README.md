@@ -19,6 +19,9 @@ The cluster endpoints are provided as outputs of the template.
 
 Note: you can omit master_flavor, slave_flavor and loadbalancer_flavor if your Openstack provides the "m1.small" flavor (this is the default provided in the template).
 
-Most importantly you need to create and upload the Ubuntu 14.04 virtual image with heat hooks pre-installed (and provide its name or id in the parameter server_name unless you register it in glance with the default name used in the template "Ubuntu 14.04.3 LTS (HEAT)”).
+Most importantly you need to create and upload the Ubuntu virtual image with heat hooks pre-installed (and provide its name or id in the parameter server_name unless you register it in glance with the default name used in the template "Ubuntu 14.04.3 LTS (HEAT)”).
 
-You can create that image using this script that makes use of diskimage-builder: https://gist.github.com/maricaantonacci/5fba6a1e67eca9e3bdf2  
+You can create that image using the following scripts that make use of diskimage-builder: 
+
+Ubuntu 14.04: https://gist.github.com/maricaantonacci/5fba6a1e67eca9e3bdf2  
+Ubuntu 16.04: https://gist.github.com/maricaantonacci/bb915242ed14424f922d3cc327b14484
