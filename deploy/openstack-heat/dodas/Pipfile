@@ -13,4 +13,4 @@ name = "pypi"
 
 "keystoneauth1" = "*"
 python-heatclient = "*"
-requests = "*"
+requests = ">=2.20.0"
