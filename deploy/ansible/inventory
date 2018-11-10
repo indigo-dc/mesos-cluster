@@ -1,7 +1,20 @@
+### Set hosts in groups
+
 [mesos_masters]
 172.30.6.129
 172.30.6.130
 172.30.6.131
+
+[mesos_slaves]
+172.30.6.132
+172.30.6.133
+172.30.6.134
+
+[load_balancers]
+172.30.6.135
+172.30.6.136
+
+### You can leave untouched the following groups. Go to the variables section below.
 
 [marathon_servers:children]
 mesos_masters
@@ -15,12 +28,16 @@ mesos_masters
 [consul_servers:children]
 mesos_masters
 
-[mesos_slaves]
-172.30.6.132
-172.30.6.133
-172.30.6.134
 
-[load_balancers]
-172.30.6.135
-172.30.6.136
+### Set variables
+[all:vars]
+mesos_username="admin"
+mesos_password="changeit"
+marathon_username="admin"
+marathon_password="changeit"
+chronos_username="admin"
+chronos_password="changeit"
+
+[load_balancers:vars]
+keepalived_virtual_ip="172.30.6.137"
 
