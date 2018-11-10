@@ -1,4 +1,24 @@
 # Mesos Cluster 
+> The present document describes how Apache Mesos is used by the [INDIGO-DataCloud](https://www.indigo-datacloud.eu/) PaaS layer. <br>
+INDIGO-DataCloud (start date: 01/04/2015, end date: 30/09/2017) is a project funded under the Horizon2020 framework program of the European Union and led by the National Institute for Nuclear Physics (INFN). It developed a data and computing platform targeting scientific communities, deployable on multiple hardware and provisioned over hybrid (private or public) e-infrastructures. 
+The INDIGO solutions are being evolved in the context of other European projects like [DEEP Hybrid-DataCloud](https://deep-hybrid-datacloud.eu), [eXtreme-DataCloud](http://www.extreme-datacloud.eu/) and [EOSC-Hub](https://www.eosc-hub.eu/)
+<hr>
+
+# Table of Contents
+
+* [Introduction](#intro)
+* [Features](#features)
+  - [INDIGO Achievements](#indigo)
+  - [DEEP Achievements](#deep)
+* [Use-cases](#usecases)
+* [Architecture](#architecture)
+* [Ansible Roles](#roles)
+* [Releases](#releases)
+* [References](#references)
+
+
+
+## <a id="intro">Introduction</a>
 
 The **INDIGO-DataCloud PaaS** relies on [Apache Mesos](http://mesos.apache.org/) for:
 - managed service deployment 
@@ -17,7 +37,7 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 - Chronos to run *user applications* (jobs), taking care of fetching input data, handling dependencies among jobs, rescheduling failed jobs.
 
 
-## Features
+## <a id="features">Features</a>
 
 - Automatic deployment through Ansible recipes embedded in TOSCA and HOT templates
   - All the services run in docker containers;
@@ -28,8 +48,9 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
   - services are automatically registered in Consul as soon as they are deployed on the cluster
 - The external access to the deployed services is ensured through load-balancers in HA (unique entrypoint: cluster Virtual IP)
 - Cluster elasticity and application auto-scaling through CLUES plugin 
+- GPU support
 
-### INDIGO achievements
+### <a id="indigo">INDIGO achievements</a>
 - [Ansible roles](#ansible-roles) and [TOSCA templates](https://github.com/indigo-dc/tosca-templates/blob/master/mesos_cluster.yaml) for cluster set-up featuring high-availability, service-discovery and load-balancing; 
 - Integration with the INDIGO [Orchestrator](https://www.gitbook.com/book/indigo-dc/orchestrator/details) 
   - Job submission and service deployment requests are described through TOSCA templates
@@ -37,7 +58,10 @@ Sophisticated two-level scheduling and efficient resource isolation are the key-
 - Cluster elasticity through [EC3/CLUES](https://github.com/indigo-dc/clues-indigo) plugin
 - Zabbix monitoring [probes](https://github.com/indigo-dc/Monitoring) for Mesos, Marathon and Chronos;
 
-### INDIGO use-cases
+### <a id="deep">DEEP achievements</a>
+- The Ansible roles and TOSCA templates have been extended in order to support the usage of GPUs.
+
+## <a id="usecases">Use-cases</a>
 The INDIGO components developed for Mesos (ansible roles, docker images, tosca custom-types and templates) have been used to support different uses-cases:
 
 - *Lifewatch-Algaebloom* for water quality modeling and analysis: 
@@ -48,16 +72,18 @@ The INDIGO components developed for Mesos (ansible roles, docker images, tosca c
   - [this TOSCA template](https://github.com/indigo-dc/tosca-templates/blob/master/dariah_repository.yaml) can be used to deploy the DARIAH Zenodo-based repository in the cloud: all the services are run as Marathon apps.   
 
 
-## Components
+## <a id="architecture">Architecture</a>
 
 The core components are:
 
 - [Mesos](http://mesos.apache.org) cluster manager for efficient resource isolation and sharing across distributed services
 - [Chronos](https://mesos.github.io/chronos/) a distributed task scheduler
 - [Marathon](https://mesosphere.github.io/marathon) for cluster management of long running containerized services
+- [ZooKeeper](https://zookeeper.apache.org/) used for leader election of the Mesos master, leader detection of the Mesos master by masters, agents and scheduler drivers, persisting Marathon/Chronos state information
 - [Consul](http://consul.io) for service discovery
 - [Docker](http://docker.io) container runtime
 - [marathon-lb](https://github.com/mesosphere/marathon-lb) for managing HAProxy, by consuming Marathon's app state
+- [Keepalived](http://www.keepalived.org/) used for the high-availability of the cluster load-balancers
 
 These components are distributed on the cluster nodes as shown in the diagram below.
 
@@ -71,7 +97,7 @@ These components are distributed on the cluster nodes as shown in the diagram be
   - On the two load-balancers the following (dockerized) components run: keepalived and marathon-lb. keepalived ensures the high-availability of the load-balancer managing the cluster Virtual IP.
 
 
-## Ansible roles
+## <a id="roles">Ansible roles</a>
 
 The following roles are available in Ansible Galaxy:
 
@@ -92,14 +118,15 @@ The following roles are available in Ansible Galaxy:
 
 These ansible roles can be installed through *ansible-galaxy* command: `ansible-galaxy install indigo-dc.rolename`
 
-## Releases
+## <a id="releases">Releases</a>
 
 | Release  | Component version |
 | ------------- | ------------- |
 | indigo_1  | Mesos 0.28.0 <br> Marathon 1.1.1 <br> Chronos 2.4.0 |
 | indigo_2  | Mesos 1.1.0 <br> Marathon 1.4.1 <br> Chronos 3.0.2 |
+| deep_1  | Mesos 1.5.0 <br> Marathon 1.5.6 <br> Chronos 3.0.2 patched for GPU support |
 
-## References
+## <a id="references">References</a>
 - **Apache mesos** 
   - Web site: http://mesos.apache.org/
   - Documentation: http://mesos.apache.org/documentation/latest/
