@@ -1,0 +1,15 @@
+- src: indigo-dc.docker
+  version: "v1.0.0-deep"
+- src: indigo-dc.consul
+  version: "v1.0.0-deep"
+- src: indigo-dc.zookeeper
+  version: "v1.0.0-deep"
+- src: indigo-dc.mesos
+  version: "v1.0.0-deep"
+- src: indigo-dc.marathon
+  version: "v1.0.0-deep"
+- src: indigo-dc.chronos
+  version: "v1.0.0-deep"
+- src: indigo-dc.marathon-lb
+  version: "v1.0.0-deep"
+- src: indigo-dc.keepalived
