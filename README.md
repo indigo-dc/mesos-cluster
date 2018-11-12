@@ -12,8 +12,9 @@ The INDIGO solutions are being evolved in the context of other European projects
   - [DEEP Achievements](#deep)
 * [Use-cases](#usecases)
 * [Architecture](#architecture)
-* [Ansible Roles](#roles)
 * [Releases](#releases)
+* [Automated configuration with ansible playbook](#deploy-with-ansible)
+* [Automated deployment (provisioning and configuration) with TOSCA](#deploy-with-tosca)
 * [References](#references)
 
 
@@ -96,10 +97,17 @@ These components are distributed on the cluster nodes as shown in the diagram be
 - **Load-balancers**
   - On the two load-balancers the following (dockerized) components run: keepalived and marathon-lb. keepalived ensures the high-availability of the load-balancer managing the cluster Virtual IP.
 
+## <a id="releases">Releases</a>
 
-## <a id="roles">Ansible roles</a>
+| Release  | Component version |
+| ------------- | ------------- |
+| indigo_1  | Mesos 0.28.0 <br> Marathon 1.1.1 <br> Chronos 2.4.0 |
+| indigo_2  | Mesos 1.1.0 <br> Marathon 1.4.1 <br> Chronos 3.0.2 |
+| deep_1  | Mesos 1.5.0 <br> Marathon 1.5.6 <br> Chronos 3.0.2 patched for GPU support |
 
-The following roles are available in Ansible Galaxy:
+## <a id="deploy-with-ansible">Automated deployment with ansible playbook</a>
+
+You can use this [guide](deploy/ansible/README.md) to deploy a Mesos cluster on a set of hosts using the following indigo-dc ansible roles:
 
 - indigo-dc.zookeeper: 
   - source: https://github.com/indigo-dc/ansible-role-zookeeper
@@ -116,15 +124,12 @@ The following roles are available in Ansible Galaxy:
 - indigo-dc.keepalived:
   - source: https://github.com/indigo-dc/ansible-role-keepalived
 
-These ansible roles can be installed through *ansible-galaxy* command: `ansible-galaxy install indigo-dc.rolename`
+These ansible roles are published on Ansible Galaxy and can be installed through *ansible-galaxy* command: `ansible-galaxy install indigo-dc.rolename`
 
-## <a id="releases">Releases</a>
+## <a id="deploy-with-tosca">Automated deployment (provisioning and configuration) with TOSCA</a>
 
-| Release  | Component version |
-| ------------- | ------------- |
-| indigo_1  | Mesos 0.28.0 <br> Marathon 1.1.1 <br> Chronos 2.4.0 |
-| indigo_2  | Mesos 1.1.0 <br> Marathon 1.4.1 <br> Chronos 3.0.2 |
-| deep_1  | Mesos 1.5.0 <br> Marathon 1.5.6 <br> Chronos 3.0.2 patched for GPU support |
+You can use this [TOSCA template](https://github.com/indigo-dc/tosca-templates/blob/master/mesos_cluster.yaml) for setting up a complete Mesos cluster on Cloud resources.  
+
 
 ## <a id="references">References</a>
 - **Apache mesos** 
