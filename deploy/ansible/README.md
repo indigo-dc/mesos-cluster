@@ -5,7 +5,7 @@ Service-discovery and load-balancing ensured by Consul, dnsmasq, marathon-lb.
 Marathon and Chronos endpoints are SSL-enabled with HTTP basic authentication (username/password).
 
 ## Dependencies
-Ubuntu 16.04
+Ubuntu 16.04 <br>
 ansible >= 2.0
 (tested with ansible >= 2.5)
 
@@ -76,8 +76,9 @@ ansible-playbook -i inventory site.yml
 
 
 ## Main Roles
-- indigo-dc.docker: install docker-ce and configure the daemon
-- indigo-dc.zookepeer: configure and start zookeeper container
-- indigo-dc.mesos: configure and start containers for mesos master (`when: mesos_install_mode=master`) and/or mesos slave (`when: mesos_install_mode=slave`) 
-- indigo-dc.marathon: configure and start container for marathon framework
+- [indigo-dc.docker](https://github.com/indigo-dc/ansible-role-docker): install docker-ce and configure the daemon
+- [indigo-dc.zookepeer](https://github.com/indigo-dc/ansible-role-zookeeper): configure and start zookeeper container
+- [indigo-dc.mesos](https://github.com/indigo-dc/ansible-role-mesos): configure and start containers for mesos master (`when: mesos_install_mode=master`) and/or mesos slave (`when: mesos_install_mode=slave`) 
+- [indigo-dc.marathon](https://github.com/indigo-dc/ansible-role-marathon): configure and start container for marathon framework
+- [indigo-dc.chronos](https://github.com/indigo-dc/ansible-role-chronos): configure and start container for chronos framework
 
