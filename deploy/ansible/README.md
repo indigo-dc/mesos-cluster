@@ -65,7 +65,7 @@ keepalived_virtual_ip="172.30.6.137"
 
 Install the depedencies:
 ```
-ansible-playbook install -r requirements.yml
+ansible-galaxy install -r requirements.yml
 ```
 
 
